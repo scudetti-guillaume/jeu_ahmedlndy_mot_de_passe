@@ -4,26 +4,34 @@ import axios from '../axiosConfig.js';
 const LoginFormPlayer = () => {
     const [login, setLogin] = useState('');
     const [isValid, setIsValid] = useState(true);
-
+    const [error, setError] = useState(null);
+    
     const handleLoginChange = (event) => {
         const inputValue = event.target.value;
         setLogin(inputValue);
         setIsValid(/^[a-zA-Z0-9]+$/.test(inputValue));
     };
 
+
     const handleSubmit = async (event) => {
         event.preventDefault();
 
         if (isValid) {
             try {
-                const response = await axios.post('/player/register', { pseudo: login });
-                console.log(response.data);
-                window.location.href = '/home';
+                setError(null);
+                await axios.post('/player/register', { pseudo: login })
+                    .then((doc) => {
+                        localStorage.setItem('user', doc.data.user);
+                        localStorage.setItem('pseudo', doc.data.pseudo);
+                        localStorage.setItem('role', doc.data.role);
+                        localStorage.setItem('token', doc.data.token);
+                    });
+                window.location.href = '/waitingroom';
             } catch (error) {
-                console.log('Erreur veuillez reesayer');
+                setError('Pseudo invalide.');
             }
         } else {
-            console.log('Login invalide');
+            setError('Pseudo invalide.');
         }
     };
 
@@ -36,6 +44,7 @@ const LoginFormPlayer = () => {
                 </label>
             </div>
             {!isValid && <p>Veuillez saisir un login contenant uniquement des caractères alphanumériques.</p>}
+            {error && <p>{error}</p>}
             <div>
                 <button type="submit">Envoyer</button>
             </div>

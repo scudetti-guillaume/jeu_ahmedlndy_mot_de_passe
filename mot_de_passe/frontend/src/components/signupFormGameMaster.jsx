@@ -5,6 +5,7 @@ const LoginFormGameMaster = () => {
     const [login, setLogin] = useState('');
     const [isValid, setIsValid] = useState(true);
     const [password, setPassword] = useState('');
+    const [error, setError] = useState(null);
 
     const handleLoginChange = (event) => {
         const inputValue = event.target.value;
@@ -26,9 +27,11 @@ const LoginFormGameMaster = () => {
                 console.log(response.data);
                 window.location.href = '/logingamemaster';
             } catch (error) {
+                setError('Pseudo ou mot de passe invalide');
                 console.log('Erreur veuillez reesayer');
             }
         } else {
+            setError('Pseudo ou mot de passe invalide');
             console.log('Login invalide');
         }
     };
@@ -44,6 +47,7 @@ const LoginFormGameMaster = () => {
                 </label>
             </div>
             {!isValid && <p>Veuillez saisir un login contenant uniquement des caractères alphanumériques.</p>}
+            {error && <p>{error}</p>}
             <div>
                 <button type="submit">Envoyer</button>
             </div>

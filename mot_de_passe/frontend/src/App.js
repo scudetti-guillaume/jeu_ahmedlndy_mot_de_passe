@@ -1,9 +1,11 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import './style/index.scss';
 import LoginPlayers from './pages/loginPlayers';
 import LoginGameMaster from './pages/loginGameMaster';
 import RegisterGameMaster from './pages/signupGameMaster';
-import Home from './pages/home';
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import './style/index.scss';
+import Waitingroom from './pages/waitingroom';
+import Game from './pages/game';
+
 
 function App() {
   return (
@@ -14,7 +16,8 @@ function App() {
           <Route path="/" element={<LoginPlayers />} />
           <Route path="/logingameMaster" element={<LoginGameMaster />} />
           <Route path="/registergamemaster" element={<RegisterGameMaster />} />
-          <Route path="/home" element={<Home />} />
+          <Route path="/waitingroom" element={<Waitingroom />} />
+          <Route path="/game" element={<Game />} />
         </Routes>
       </BrowserRouter>
     </>

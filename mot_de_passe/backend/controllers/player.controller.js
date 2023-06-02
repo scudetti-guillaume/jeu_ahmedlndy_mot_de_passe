@@ -25,8 +25,8 @@ exports.signUp = async (req, res, next) => {
             });
             await userNew.save();
             const user = await PlayerModel.login(pseudo);
-            console.log(user);
             const token = createToken(user._id);
+            console.log(token);
             // return res.status(201).json(userNew);
             res.cookie("jwtPlayer", token, {
                 session: false,
@@ -34,7 +34,8 @@ exports.signUp = async (req, res, next) => {
                 secure: false,
                 httpOnly: true,
             });
-            res.status(200).json({ user: user._id, token });
+            res.status(200).json({ user: user._id, role: user.role, pseudo: user.pseudo, token });
+            console.log(user);
         } catch (err) {
         console.log(err);
             res.status(401).json('erreur veuillez reesayer');
@@ -42,46 +43,16 @@ exports.signUp = async (req, res, next) => {
     }
 };
 
-// exports.signIn = async (req, res) => {
-//     const { pseudo } = req.body;
-//     console.log(req.body);
-//     try {
-//         const user = await PlayerModel.login(pseudo);
-//         console.log(user);
-//         const token = createToken(user._id);
-//         // const cookieOptions = {
-//         //     // SameSite: None, // Décommentez cette ligne si vous souhaitez activer SameSite=None pour les cookies (nécessite HTTPS)
-//         //     // session: false, // Vous n'avez pas besoin de définir cette option car elle est obsolète dans Express
-//         //     maxAge: durationTokenLogin12,
-//         //     secure: false, // Définissez cette option sur true si vous utilisez HTTPS
-//         //     httpOnly: true,
-//         // };
-//         res.cookie("jwtGamemaster", token, {
-//             session: false,
-//             maxAge: durationTokenLogin12,
-//             secure: false,
-//             httpOnly: true,
-//         });
-//         PlayerModel.findOne({ _id: user, role: "gameMaster" }, (err, doc) => {
-//             if (doc) {
-//                 console.log(res);
-//                 res.status(200).json({ user: user._id, token });
-//                 // res.clearCookie("jwtGamemaster"); 
-//                 // res.status(400).json("utilisateur banni");
-//             } else {
-//                 res.cookie("jwtGamemaster", "", { maxAge: durationTokenLogout }),
-//                     res.status(400).json("utilisateur banni");
-//             }
-//         });
-//     } catch (error) {
-//         console.log('error');
-//         res.status(401).json('erreur veuillez reesayer');
-//     }
-// };
-
-// logout end point \\
-
 exports.logout = (req, res) => {
     res.cookie("jwtPlayer", "", { maxAge: durationTokenLogout });
     res.redirect("./");
 };
+
+
+exports.getallplayer = async ( req,res ) => {
+console.log(req);
+    const users = await PlayerModel.find();
+    console.log(users);
+    res.status(200).json(users);
+
+}

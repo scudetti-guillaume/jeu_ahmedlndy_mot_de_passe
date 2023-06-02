@@ -5,6 +5,7 @@ const LoginFormGameMaster = () => {
     const [login, setLogin] = useState('');
     const [isValid, setIsValid] = useState(true);
     const [password, setPassword] = useState('');
+    const [error, setError] = useState(null);
 
     const handleLoginChange = (event) => {
         const inputValue = event.target.value;
@@ -21,13 +22,21 @@ const LoginFormGameMaster = () => {
         event.preventDefault();
         if (isValid) {
             try {
-                const response = await axios.post('/gamemaster/login', {pseudo: login, password });
-                console.log( response.data);
-                // Faites ici toute autre logique que vous souhaitez effectuer avec la réponse de la demande REST
+                setError(null);
+                await axios.post('/gamemaster/login', { pseudo: login, password })
+                .then((doc) => {
+                        localStorage.setItem('user', doc.data.user);
+                        localStorage.setItem('pseudo', doc.data.pseudo);
+                        localStorage.setItem('role', doc.data.role);
+                        localStorage.setItem('token', doc.data.token);
+                    });            
+                window.location.href = '/waitingroom';
             } catch (error) {
+                setError('Pseudo invalide.');
                 console.error('Erreur veuillez reesayer');
             }
         } else {
+            setError('Pseudo invalide.');
             console.log('Login invalide');
         }
     };
@@ -43,6 +52,7 @@ const LoginFormGameMaster = () => {
                 </label>
             </div>
             {!isValid && <p>Veuillez saisir un login contenant uniquement des caractères alphanumériques.</p>}
+            {error && <p>{error}</p>}
             <div>
                 <button type="submit">Envoyer</button>
             </div>
