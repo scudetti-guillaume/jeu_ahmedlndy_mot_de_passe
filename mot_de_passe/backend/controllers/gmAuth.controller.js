@@ -44,34 +44,35 @@ exports.signIn = async (req, res) => {
         const user = await gameMasterModel.login(pseudo, password);
         console.log(user);
         const token = createToken(user._id);
-        const cookieOptions = {
-            // SameSite: None, // Décommentez cette ligne si vous souhaitez activer SameSite=None pour les cookies (nécessite HTTPS)
-            // session: false, // Vous n'avez pas besoin de définir cette option car elle est obsolète dans Express
-            maxAge: durationTokenLogin12,
-            secure: false, // Définissez cette option sur true si vous utilisez HTTPS
-            httpOnly: true,
-        };
-        // res.cookie("jwtGamemaster", token, {
-        //     // SameSite : None,
-        //     session: false,
+        // const cookieOptions = {
+        //     // SameSite: None, // Décommentez cette ligne si vous souhaitez activer SameSite=None pour les cookies (nécessite HTTPS)
+        //     // session: false, // Vous n'avez pas besoin de définir cette option car elle est obsolète dans Express
         //     maxAge: durationTokenLogin12,
-        //     secure: false,
+        //     secure: false, // Définissez cette option sur true si vous utilisez HTTPS
         //     httpOnly: true,
-        // });
-        res.cookie("jwtGamemaster", token, cookieOptions);
+        // };
+        res.cookie("jwtGamemaster", token, {
+            session: false,
+            maxAge: durationTokenLogin12,
+            secure: false,
+            httpOnly: true,
+        });
         gameMasterModel.findOne({ _id: user, role: "gameMaster" }, (err, doc) => {
-            if (!doc) {
-                res.clearCookie("jwtGamemaster"); // Supprimez le cookie si l'utilisateur est banni
-                res.status(400).json("utilisateur banni");
-                // res.cookie("jwtGamemaster", "", { maxAge: durationTokenLogout }),
-                //     res.status(400).json("utilisateur banni");
-            } else {
+            if (doc) {
+                console.log(res);
                 res.status(200).json({ user: user._id, token });
+                // res.clearCookie("jwtGamemaster"); 
+                // res.status(400).json("utilisateur banni");
+               
+                   
+            } else {
+                res.cookie("jwtGamemaster", "", { maxAge: durationTokenLogout }),
+                res.status(400).json("utilisateur banni");
             }
         });
-    } catch (err) {
+    } catch (error) {
         console.log('error');
-        res.status(401).send(err);
+        res.status(401).json('erreur veuillez reesayer');
     }
 };
 

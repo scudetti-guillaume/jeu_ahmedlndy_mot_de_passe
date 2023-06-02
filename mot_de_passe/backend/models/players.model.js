@@ -8,12 +8,26 @@ const playerSchema = mongoose.Schema(
             minlength: 3,
             maxlength: 20,
             trim: true,
+        },
+        role: {
+            type: String,
         }
     },
     {
         timestamps: true,
     }
 )
+
+
+playerSchema.statics.login = async function (pseudo) {
+    const player = await this.findOne({ pseudo });
+    // const gameMasters = await GameMasterModel.find();
+    console.log(player);
+    if (player) {
+        return player;
+    }
+    throw Error("accée refusé");
+};
 
 const PlayerModel = mongoose.model("players", playerSchema);
 

@@ -6,6 +6,7 @@ const cors = require("cors");
 const path = require("path")
 const mongoose = require("mongoose");
 const gameMasterRoutes = require("./routes/gameMaster.route");
+const playerRoutes = require("./routes/players.route");
 // const { requireAuth } = require("./middleware/auth.middleware");
 require("dotenv").config({ path: "../.env" });
 const app = express();
@@ -45,7 +46,7 @@ mongoose
 //     }
 // });
 
-// app.use("/player", userRoutes);
+app.use("/player", playerRoutes);
 app.use("/gamemaster", gameMasterRoutes);
 // app.use("/gameOn", userRoutes);
 

@@ -11,7 +11,7 @@ function App() {
       {/* <BrowserRouter basename="/ahmed_jeu_mdp/">  */}
       <BrowserRouter >
         <Routes>
-          <Route path="/loginplayers" element={<LoginPlayers />} />
+          <Route path="/" element={<LoginPlayers />} />
           <Route path="/logingameMaster" element={<LoginGameMaster />} />
           <Route path="/registergamemaster" element={<RegisterGameMaster />} />
           <Route path="/home" element={<Home />} />

@@ -23,10 +23,10 @@ const LoginFormGameMaster = () => {
         if (isValid) {
             try {
                 const response = await axios.post('/gamemaster/register', { pseudo: login, password });
-                console.log('Réponse de la demande REST :', response.data);
-                // Faites ici toute autre logique que vous souhaitez effectuer avec la réponse de la demande REST
+                console.log(response.data);
+                window.location.href = '/logingamemaster';
             } catch (error) {
-                console.error('Erreur lors de la demande REST :', error);
+                console.log('Erreur veuillez reesayer');
             }
         } else {
             console.log('Login invalide');

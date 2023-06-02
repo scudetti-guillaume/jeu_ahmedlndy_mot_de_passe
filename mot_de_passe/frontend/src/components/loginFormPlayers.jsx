@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from '../axiosConfig.js';
 
 const LoginFormPlayer = () => {
     const [login, setLogin] = useState('');
@@ -10,13 +11,17 @@ const LoginFormPlayer = () => {
         setIsValid(/^[a-zA-Z0-9]+$/.test(inputValue));
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
         if (isValid) {
-            // Envoyer la demande REST avec le login du joueur
-            console.log('Login valide :', login);
-            // Faites ici votre appel REST ou toute autre logique que vous souhaitez effectuer avec les données du formulaire
+            try {
+                const response = await axios.post('/player/register', { pseudo: login });
+                console.log(response.data);
+                window.location.href = '/home';
+            } catch (error) {
+                console.log('Erreur veuillez reesayer');
+            }
         } else {
             console.log('Login invalide');
         }

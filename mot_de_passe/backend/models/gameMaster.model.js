@@ -38,12 +38,8 @@ gameMasterSchema.statics.login = async function (pseudo, password) {
     // const gameMasters = await GameMasterModel.find();
     console.log(gameMaster);
     if (gameMaster) {
-        console.log(gameMaster.password);
-        console.log(password);
         const auth = await bcrypt.compare(password, gameMaster.password);
-        console.log(auth);
         if (auth) {
-            console.log('her2');
             return gameMaster;
         }
     }
