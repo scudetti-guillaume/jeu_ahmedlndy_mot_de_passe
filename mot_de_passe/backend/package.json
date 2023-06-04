@@ -20,6 +20,7 @@
     "mongodb": "^5.5.0",
     "mongoose": "^6.4.5",
     "node": "^18.13.0",
-    "nodemon": "^2.0.22"
+    "nodemon": "^2.0.22",
+    "socket.io": "^4.6.2"
   }
 }

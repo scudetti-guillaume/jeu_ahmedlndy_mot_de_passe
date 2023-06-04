@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../axiosConfig.js';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 
 const Waitingroom = () => {
     const [players, setPlayers] = useState([]);
@@ -44,11 +45,29 @@ const Waitingroom = () => {
             }
         }; getGameMaster()
     }, []);
+    
+    useEffect(() => {
+        const socket = io(`http://localhost:4000/team/addplayer`); // Replace YOUR_SERVER_PORT with the actual port number
+
+        // Listen for the 'playerAdded' event
+        socket.on('playerAdded', (player) => {
+            setPlayers((prevPlayers) => [...prevPlayers, player]);
+        });
+
+        // Listen for the 'playerRemoved' event
+        socket.on('playerRemoved', (playerId) => {
+            setPlayers((prevPlayers) => prevPlayers.filter((player) => player._id !== playerId));
+        });
+
+        // Clean up the Socket.IO connection on component unmount
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
+
 
     const handleDragStart = (e, playerId, fromTeam) => {
         const isGameMaster = user === 'gameMaster';
-        console.log(user);
-        console.log(isGameMaster);
         if (isGameMaster) {
             e.dataTransfer.setData('playerId', playerId.toString());
             e.dataTransfer.setData('fromTeam', fromTeam ? 'true' : 'false');
@@ -80,19 +99,10 @@ const Waitingroom = () => {
                     ]);
                 }
                 setPlayers((prevPlayers) => prevPlayers.filter((player) => player._id !== playerId));
+                axios.post("/team/addplayer", {playerId : playerId})
             } else {
                 alert('Équipe complète !');
             }
-        }
-    };
-
-    const handleDropPlayers = (e) => {
-        e.preventDefault();
-        const playerId = e.dataTransfer.getData('playerId');
-        const playerToAdd = team1.find((player) => player._id === playerId);
-        if (playerToAdd) {
-            setPlayers((prevPlayers) => [...prevPlayers, playerToAdd]);
-            setTeam1((prevTeam1) => prevTeam1.filter((player) => player._id !== playerId));
         }
     };
 
@@ -101,13 +111,19 @@ const Waitingroom = () => {
         if (playerToRemove) {
             setPlayers((prevPlayers) => [...prevPlayers, playerToRemove]);
             setTeam1((prevTeam1) => prevTeam1.filter((player) => player._id !== playerId));
+            console.log(playerToRemove._id);
+            axios.patch("/team/removeplayer", { playerId: playerToRemove._id } )
         }
     };
     
     const handleStartGame = () => {
         if (user === 'gameMaster' && team1.length === 2) {
+            axios.get("/team/launchgame").then((doc)=>{
+            console.log(doc);
+            
+            })
             // Rediriger vers la page "/game" avec les joueurs sélectionnés
-            navigate('/game', { players: team1 });
+            // navigate('/game', { players: team1 });
         }
     };
 
@@ -118,7 +134,7 @@ const Waitingroom = () => {
             <div className="wrWrapper">
                 <div className="wrPlayerlistMain">
                     <h2 className="wrPlayerh2">Joueurs</h2>
-                    <ul className="wrPlayerUl" onDragOver={handleDragOver} onDrop={handleDropPlayers}>
+                    <ul className="wrPlayerUl" onDragOver={handleDragOver} >
                         {players.map((player) => (
                             <li
                                 className="wrPlayerIl"
