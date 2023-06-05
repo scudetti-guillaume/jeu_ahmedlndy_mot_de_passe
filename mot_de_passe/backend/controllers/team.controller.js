@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 exports.addPlayer = async (req, res) => {
     const { playerId } = req.body
     try {
-      const addPlayer = await  TeamModel.findOneAndUpdate({}, { $push: { playerId } }, { upsert: true, });
+        const addPlayer = await TeamModel.findOneAndUpdate({}, { $push: { playerId } }, { upsert: true, });
         const PlayerListTrue = await PlayerModel.findOneAndUpdate({ _id: playerId }, { selected: true }, { new: true });
         console.log(PlayerListTrue);
         if (addPlayer && PlayerListTrue) {
@@ -34,40 +34,57 @@ exports.removePlayer = async (req, res, next) => {
 }
 
 exports.getTeam = async (req, res) => {
-try {
-    const PlayerListTrue = await PlayerModel.find({ selected: true });
-    console.log(PlayerListTrue);
-    // const team = await TeamModel.find({}, 'playerId')
-    // selectedPlayers = []
-    // if (team.length != 0) {
-    //     const Players = team[0].playerId 
-    //     // console.log(Players);
-    //     console.log(Players);
-    //     Players.forEach(player => {
-    //         console.log(player);
-    //         PlayerModel.findById( player, (res)=>{
-            
-    //             console.log(res);
-            
-    //         })
-         
-    //     });
-    res.status(200).json(PlayerListTrue)
-    // } else {
-    //     res.status(200).json("aucun joueur selectionner")
-    // }
-}catch (err){
-    res.status(400).json(err)
+    try {
+        const PlayerListTrue = await PlayerModel.find({ selected: true });
+        // const team = await TeamModel.find({}, 'playerId')
+        // selectedPlayers = []
+        // if (team.length != 0) {
+        //     const Players = team[0].playerId 
+        //     // console.log(Players);
+        //     console.log(Players);
+        //     Players.forEach(player => {
+        //         console.log(player);
+        //         PlayerModel.findById( player, (res)=>{
 
-}
+        //             console.log(res);
+
+        //         })
+
+        //     });
+        res.status(200).json(PlayerListTrue)
+        // } else {
+        //     res.status(200).json("aucun joueur selectionner")
+        // }
+    } catch (err) {
+        res.status(400).json(err)
+
+    }
 }
 
 exports.startGame = async (req, res) => {
-    const team = await TeamModel.find({}, 'playerId')
-    if (team) {
-        req.app.get("io").emit("startGame", team);
-        res.status(200).json(team)
-    } else {
-        res.status(400).json("erreur pas de session de jeu trouvée")
+    const PlayerListTrue = await PlayerModel.find({ selected: true });
+    
+    console.log(PlayerListTrue);
+    const teamStart = []
+    teamStart.push(PlayerListTrue)
+    try {
+        PlayerListTrue.forEach((player) => {
+            TeamModel.findOneAndUpdate(
+                {},
+                {
+                    $push: { player: { playerId: player._id, playerPseudo: player.pseudo } }
+                },
+                { upsert: true, new: true }
+            )
+                .then((team) => {
+                    console.log(team.id)
+
+                })
+
+        });
+        await res.status(200).json(teamStart)
+        await req.app.get("io").emit("startGame", teamStart);
+    } catch (error) {
+        res.status(500).json('erreur de chargement de team');
     }
 }

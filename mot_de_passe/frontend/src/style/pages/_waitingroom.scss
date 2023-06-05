@@ -58,20 +58,39 @@
     font-weight: bold;
 }
 
+
+.wrTMlistLiPseudo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .wrTMButton {
     display: flex;
     width: fit-content;
     height: fit-content;
-    background:$background-maybar;
+    background: $background-maybar;
     border-radius: 10px;
     padding: 2%;
 }
+
+.wrStartGameButton {
+    display: flex;
+    background: $background-body-4;
+    border-radius: 10px;
+    padding: 2%;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-style: italic;
+    font-weight: bold;
+}
+
 
 .wrPlayerlistMain {
     display: flex;
     flex-direction: column;
     width: 50%;
-
 }
 
 .wrPlayerh2 {

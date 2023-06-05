@@ -48,7 +48,7 @@ mongoose
 app.use("/player", playerRoutes);
 app.use("/gamemaster", gameMasterRoutes);
 app.use("/team", router);
-// app.use("/team", router(io));
+// app.use("/game", game);
 app.set("io", io);
 
 

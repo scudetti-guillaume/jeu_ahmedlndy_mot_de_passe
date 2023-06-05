@@ -2,10 +2,28 @@ const mongoose = require("mongoose");
 
 const teamSchema = mongoose.Schema(
     {
-        playerId: [{
-            type: String,
-            required: true,
-        }],
+        player: {
+            type: [
+                {
+                    playerId:
+                    {
+                        type: String,
+                        require: true
+                    },
+                    playerPseudo: {
+                        type: String,
+                        require: true
+                    },
+                    speak: {
+                        type: Boolean,
+                        default: false
+                    }
+                }
+            ]
+        },
+        points: {
+            type: String
+        }
     },
 
     {

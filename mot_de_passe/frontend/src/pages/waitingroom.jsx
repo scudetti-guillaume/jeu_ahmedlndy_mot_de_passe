@@ -6,6 +6,7 @@ import { io } from 'socket.io-client';
 const Waitingroom = () => {
     const [players, setPlayers] = useState([]);
     const [user, setUser] = useState(null);
+    const [userId, setUserId] = useState(null);
     const [team1, setTeam1] = useState([]);
     const navigate = useNavigate();
 
@@ -22,7 +23,7 @@ const Waitingroom = () => {
                 // // console.log(selectedPlayerIds);
                 setTeam1(selectedPlayerIds);
             } catch (error) {
-                console.error('Erreur lors de la récupération des joueurs de l\'équipe :', error);
+                console.error("Erreur lors de la récupération des joueurs de l'équipe :", error);
             }
         };
         fetchTeam();
@@ -66,8 +67,26 @@ const Waitingroom = () => {
         }; getGameMaster()
     }, []);
 
-
- 
+    useEffect(() => {
+        // const fetchGameMaster = async () => {
+        //     try {
+        //         const response = await axios.get('/gamemaster/gamemaster');
+        //         console.log(response.data[0].role);
+        //         setUser(response.data[0].role);
+        //     } catch (error) {
+        //         console.error('Erreur lors de la récupération du gamemaster :', error);
+        //     }
+        // };
+        // fetchGameMaster();
+        const getUserId = async () => {
+            try {
+                const data = localStorage.getItem('user')
+                setUserId(data);
+            } catch (error) {
+                console.error("Erreur lors de la récupération de l'id user :", error);
+            }
+        }; getUserId()
+    }, []);
 
     useEffect(() => {
         const socket = io(`http://localhost:4000`);
@@ -109,17 +128,25 @@ const Waitingroom = () => {
         });
 
         socket.on('startGame', (data) => {
-            // axios.get("/team/launchgame").then((doc) => {
-            //     console.log(doc);
-            // })
-            console.log(data);
+            data[0].forEach(player => {
+                console.log(player._id);
+                if (user === 'gameMaster' || userId === player._id) {
+                
+                  navigate('/game');
+                
+                }
+                
+            });
+            
+            // navigate('/game', { players: team1 });
+           
         });
 
         // Clean up the Socket.IO connection on component unmount
         return () => {
             socket.disconnect();
         };
-    }, [players, team1]);
+    }, [navigate, players, team1]);
 
 
     const handleDragStart = (e, playerId, fromTeam) => {
@@ -177,9 +204,10 @@ const Waitingroom = () => {
 
     const handleStartGame = () => {
         if (user === 'gameMaster' && team1.length === 2) {
-            axios.get("/team/launchgame").then((doc) => {
+            axios.post("/team/launchgame").then((doc) => {
                 console.log(doc);
             })
+            
             // Rediriger vers la page "/game" avec les joueurs sélectionnés
             // navigate('/game', { players: team1 });
         }
@@ -211,10 +239,13 @@ const Waitingroom = () => {
                     <ul className="wrTMlist" onDragOver={handleDragOver} onDrop={handleDropTeam1}>
                         {team1.map((player, index) => (
                             <li className="wrTMlistLi" key={player._id}>
-
-                                <p>Joueur {index % 2 === 0 ? 1 : 2}:</p>
-                                <p>{player.pseudo}</p>
+                                <div className="wrTMlistLiDiv">
+                                    <p className="wrTMlistLiPlayer">Joueur {index % 2 === 0 ? 1 : 2}:</p>
+                                <p className="wrTMlistLiPseudo">{player.pseudo}</p>
+                                </div>
+                                {(user === 'gameMaster' || userId === player._id ) &&  (
                                 <button className='wrTMButton' onClick={() => handleRemovePlayer(player._id)}>Retirer le joueur</button>
+                                )}
                             </li>
                         ))}
                     </ul>
