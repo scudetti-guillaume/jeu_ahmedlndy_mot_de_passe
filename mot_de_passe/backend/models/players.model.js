@@ -11,7 +11,12 @@ const playerSchema = mongoose.Schema(
         },
         role: {
             type: String,
+        },
+        selected : {
+         type : Boolean,
+         default : false
         }
+        
     },
     {
         timestamps: true,

@@ -35,7 +35,6 @@ exports.signUp = async (req, res, next) => {
                 httpOnly: true,
             });
             res.status(200).json({ user: user._id, role: user.role, pseudo: user.pseudo, token });
-            console.log(user);
         } catch (err) {
         console.log(err);
             res.status(401).json('erreur veuillez reesayer');
@@ -50,9 +49,6 @@ exports.logout = (req, res) => {
 
 
 exports.getallplayer = async ( req,res ) => {
-console.log(req);
-    const users = await PlayerModel.find();
-    console.log(users);
+    const users = await PlayerModel.find({selected : false});
     res.status(200).json(users);
-
 }

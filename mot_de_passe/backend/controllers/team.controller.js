@@ -1,52 +1,30 @@
 const TeamModel = require("../models/team.model");
+const PlayerModel = require("../models/players.model");
 const jwt = require("jsonwebtoken");
 
-exports.addPlayer = async (req, res, next) => {
+exports.addPlayer = async (req, res) => {
     const { playerId } = req.body
     try {
-        // const findplayer = await PlayerModel.findById(playerId)
-        // if (findplayer) {
-        // const team = await TeamModel.find().count();
-        // console.log(team);
-        // if (team != 1) {
-        //     team = new TeamModel();
-        //     team.save();
-        // }
-        // const newPlayer = {
-        //     playerId ,
-        //     // playerPseudo: req.body.pseudo, 
-        //     // playerRole : req.boby.role,
-        //     // playerSelect 
-        // } 
-
-        TeamModel.findOneAndUpdate({}, { $push: { playerId } }, { upsert: true, }, (err, response) => {
-            console.log(response);
-            if (err) {
-                res.status(400).json("erreur d'ajout de joueur");
-            } else {
-                res.status(200).json({ playerId });
-                console.log('Joueur ajouté à l\'équipe:', playerId);
-
-            }
-        });
+      const addPlayer = await  TeamModel.findOneAndUpdate({}, { $push: { playerId } }, { upsert: true, });
+        const PlayerListTrue = await PlayerModel.findOneAndUpdate({ _id: playerId }, { selected: true }, { new: true });
+        console.log(PlayerListTrue);
+        if (addPlayer && PlayerListTrue) {
+            req.app.get("io").emit("playerAdded", playerId);
+            res.status(200).json(addPlayer);
+        }
     } catch (error) {
         res.status(400).json("erreur d'ajout de joueur")
     }
-    const find = await TeamModel.find().count();
-    if (find > 2) {
-        res.status(400).json("equipe complete")
-    }
-
 }
 
 exports.removePlayer = async (req, res, next) => {
-    console.log(req.body);
     const { playerId } = req.body
     try {
         const removedPlayer = await TeamModel.findOneAndUpdate({}, { $pull: { playerId } }, { upsert: true, },);
-        if (removedPlayer) {
-            // console.log('Joueur supprimé:', removedPlayer);
-            res.status(200).json('Joueur supprimé');
+        const PlayerListFalse = await PlayerModel.findOneAndUpdate({ _id: playerId }, { selected: false }, { new: true });
+        if (removedPlayer && PlayerListFalse) {
+            req.app.get("io").emit("playerRemoved", playerId);
+            res.status(200).json('Joueur supprimé' + '' + playerId);
         } else {
             res.status(400).json("Erreur de suppression du joueur");
         }
@@ -55,12 +33,39 @@ exports.removePlayer = async (req, res, next) => {
     }
 }
 
+exports.getTeam = async (req, res) => {
+try {
+    const PlayerListTrue = await PlayerModel.find({ selected: true });
+    console.log(PlayerListTrue);
+    // const team = await TeamModel.find({}, 'playerId')
+    // selectedPlayers = []
+    // if (team.length != 0) {
+    //     const Players = team[0].playerId 
+    //     // console.log(Players);
+    //     console.log(Players);
+    //     Players.forEach(player => {
+    //         console.log(player);
+    //         PlayerModel.findById( player, (res)=>{
+            
+    //             console.log(res);
+            
+    //         })
+         
+    //     });
+    res.status(200).json(PlayerListTrue)
+    // } else {
+    //     res.status(200).json("aucun joueur selectionner")
+    // }
+}catch (err){
+    res.status(400).json(err)
+
+}
+}
 
 exports.startGame = async (req, res) => {
-    // const { playerId } = req.body
     const team = await TeamModel.find({}, 'playerId')
-    console.log(team);
     if (team) {
+        req.app.get("io").emit("startGame", team);
         res.status(200).json(team)
     } else {
         res.status(400).json("erreur pas de session de jeu trouvée")
