@@ -36,34 +36,16 @@ exports.removePlayer = async (req, res, next) => {
 exports.getTeam = async (req, res) => {
     try {
         const PlayerListTrue = await PlayerModel.find({ selected: true });
-        // const team = await TeamModel.find({}, 'playerId')
-        // selectedPlayers = []
-        // if (team.length != 0) {
-        //     const Players = team[0].playerId 
-        //     // console.log(Players);
-        //     console.log(Players);
-        //     Players.forEach(player => {
-        //         console.log(player);
-        //         PlayerModel.findById( player, (res)=>{
-
-        //             console.log(res);
-
-        //         })
-
-        //     });
         res.status(200).json(PlayerListTrue)
-        // } else {
-        //     res.status(200).json("aucun joueur selectionner")
-        // }
+
     } catch (err) {
         res.status(400).json(err)
-
+// 
     }
 }
 
 exports.startGame = async (req, res) => {
     const PlayerListTrue = await PlayerModel.find({ selected: true });
-    
     console.log(PlayerListTrue);
     const teamStart = []
     teamStart.push(PlayerListTrue)
@@ -78,7 +60,7 @@ exports.startGame = async (req, res) => {
             )
                 .then((team) => {
                     console.log(team.id)
-
+                    team.save()
                 })
 
         });
@@ -86,5 +68,41 @@ exports.startGame = async (req, res) => {
         await req.app.get("io").emit("startGame", teamStart);
     } catch (error) {
         res.status(500).json('erreur de chargement de team');
+    }
+}
+
+exports.wordList = async (req, res) => {
+    const { player1Words, player2Words } = req.body;
+    const list_1 = []
+    const list_2 = []
+    const askwordlist = await TeamModel.find({});
+    askwordlist.forEach(team => {
+        list_1.push(team.wordlist_1)
+        list_2.push(team.wordlist_2)
+        // console.log(team.wordlist_1);
+        // console.log(team.wordlist_2);
+    });
+
+    console.log(list_1[0].length);
+    console.log(list_2[0].length);
+
+    if (list_1[0].length == 0 && list_2[0].length == 0 ){
+
+    try {
+        const updateQuery = {
+            $push: {
+                wordlist_1: { $each: player1Words },
+                wordlist_2: { $each: player2Words }
+            }
+        };
+
+        const wordlist = await TeamModel.updateMany({}, updateQuery);
+
+        res.status(200).json("Mots ajoutés avec succès !" + wordlist);
+    } catch (err) {
+        res.status(400).json(err);
+    }
+    }else{
+        res.status(200).json("Mots deja ajoutés avec succès !");
     }
 }

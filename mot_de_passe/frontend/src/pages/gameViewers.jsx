@@ -1,11 +1,11 @@
 import React from 'react';
 
-const game = () => {
+const GameViewers = () => {
     return (
         <div>
-            <p>Game</p>
+            panel viewers
         </div>
     );
 };
 
-export default game;
+export default GameViewers;

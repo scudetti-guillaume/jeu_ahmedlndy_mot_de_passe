@@ -1,0 +1,52 @@
+@import "../_settings.scss";
+
+.GM-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+}
+
+.GM-TeamScore-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    border: solid 1px violet;
+    padding: 2%;
+    border-radius: 10px;
+}
+
+
+.GM-btn-word {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row;
+
+}
+
+.GM-btn-word-btn-valide {
+    color: black;
+    background: green;
+}
+
+.GM-btn-word-btn-refuse {
+    background: rgb(128, 9, 0);
+    color: black;
+}
+
+.GM-player-main {
+    display: flex;
+    flex-direction: row;
+    width: 50vh;
+    justify-content: space-around;
+    align-items: center;
+    border: solid 1px rgb(130, 204, 238);
+    padding: 2%;
+    border-radius: 10px;
+
+
+}

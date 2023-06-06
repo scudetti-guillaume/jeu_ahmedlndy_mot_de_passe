@@ -22,14 +22,20 @@ const teamSchema = mongoose.Schema(
             ]
         },
         points: {
-            type: String
-        }
+            type: String,
+            default : 0
+        },
+        wordlist_1: [String],
+        wordlist_2: [String],
+        
     },
 
-    {
-        timestamps: true,
+{
+    timestamps: true,
     }
 );
+
+
 
 const TeamModel = mongoose.model("team", teamSchema);
 module.exports = TeamModel;

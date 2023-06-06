@@ -10,17 +10,12 @@ const Waitingroom = () => {
     const [team1, setTeam1] = useState([]);
     const navigate = useNavigate();
 
-
-
     useEffect(() => {
         const fetchTeam = async () => {
             try {
                 const response = await axios.get('/team/team');
                 const selectedPlayerIds = response.data;
                 console.log(selectedPlayerIds);
-                // const selectedPlayers = players.filter((player) => selectedPlayerIds.includes(player._id));
-                // console.log("Joueurs sélectionnés :", selectedPlayers);
-                // // console.log(selectedPlayerIds);
                 setTeam1(selectedPlayerIds);
             } catch (error) {
                 console.error("Erreur lors de la récupération des joueurs de l'équipe :", error);
@@ -130,10 +125,11 @@ const Waitingroom = () => {
         socket.on('startGame', (data) => {
             data[0].forEach(player => {
                 console.log(player._id);
-                if (user === 'gameMaster' || userId === player._id) {
-                
-                  navigate('/game');
-                
+                if (userId === player._id) {
+                    navigate('/gamePlayer');
+                }
+                if (user === 'gameMaster' ) {
+                    navigate('/gameGM');
                 }
                 
             });
@@ -146,7 +142,7 @@ const Waitingroom = () => {
         return () => {
             socket.disconnect();
         };
-    }, [navigate, players, team1]);
+    }, [navigate, players, team1, user, userId]);
 
 
     const handleDragStart = (e, playerId, fromTeam) => {
@@ -207,9 +203,7 @@ const Waitingroom = () => {
             axios.post("/team/launchgame").then((doc) => {
                 console.log(doc);
             })
-            
-            // Rediriger vers la page "/game" avec les joueurs sélectionnés
-            // navigate('/game', { players: team1 });
+
         }
     };
 
