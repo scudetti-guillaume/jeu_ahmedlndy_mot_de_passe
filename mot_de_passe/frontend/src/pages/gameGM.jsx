@@ -174,8 +174,8 @@ const GameGM = () => {
                                 <span
                                     key={index}
                                     style={{
-                                        border: playerDirection === 1 && index === currentWordIndex ? '2px solid green' : 'none',
-                                        color: playerDirection === 1 && index < currentWordIndex ? 'green' : 'white',
+                                        border: playerDirection === 1 && index === currentWordIndex ? '2px solid green' : 'red',
+                                        color: playerDirection === 1 && index < currentWordIndex ? 'red' : 'white',
                                     }}
                                 >
                                     {word}
