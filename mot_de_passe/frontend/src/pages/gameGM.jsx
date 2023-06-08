@@ -11,7 +11,9 @@ const GameGM = () => {
     const [words, setWords] = useState({ player1Words: [], player2Words: [] });
     const [currentWordIndex, setCurrentWordIndex] = useState(0);
     const [currentWord, setCurrentWord] = useState('');
-    const numWordsPerRound = 6;
+    const [currentPlayerIndex, setCurrentPlayerIndex] = useState(1);
+    const [currentPlayerWords, setCurrentPlayerWords] = useState(words.player1Words);
+    const numWordsPerRound = 12;
     const numWordsPerRound_2 = 12;
     const numRounds = 2;
 
@@ -32,14 +34,10 @@ const GameGM = () => {
             const player1Words = newWords.slice(0, numWords / 2);
             const player2Words = newWords.slice(numWords / 2, numWords);
             await axios.post("/team/words", { player1Words, player2Words });
-            let list_1 = [];
-            let list_2 = [];
             await axios.get("/team/getWords").then((doc) => {
-                list_1 = doc.data.list_1;
-                list_2 = doc.data.list_2;
+                setWords({ player1Words: doc.data.list_1, player2Words: doc.data.list_2 });
             });
-            setWords({ player1Words: list_1, player2Words: list_2 });
-            return [[list_1], [list_2]];
+            return [player1Words, player2Words];
         } catch (error) {
             console.log(error);
             return [];
@@ -63,47 +61,55 @@ const GameGM = () => {
             const player1Words = newWords.slice(0, numWords / 2);
             const player2Words = newWords.slice(numWords / 2, numWords);
             await axios.post("/team/words", { player1Words, player2Words });
-            let list_1 = [];
-            let list_2 = [];
             await axios.get("/team/getWords").then((doc) => {
-                list_1 = doc.data.list_1;
-                list_2 = doc.data.list_2;
+                setWords({ player1Words: doc.data.list_1, player2Words: doc.data.list_2 });
             });
-            setWords({ player1Words: list_1, player2Words: list_2 });
-
-            return [[list_1], [list_2]];
+            return [player1Words, player2Words];
         } catch (error) {
             console.log(error);
             return [];
         }
     }
 
+
     const regenWordList = async () => {
-        const { list_1, list_2 } = await regenWords(numWordsPerRound_2, words.player1Words.concat(words.player2Words));
-        if (list_1 && list_2) {
-            setWords({ player1Words: list_1, player2Words: list_2 });
-        }
-    };
+        const [player1Words, player2Words] = await regenWords(numWordsPerRound_2, words.player1Words.concat(words.player2Words));
+        setWords({ player1Words: player1Words, player2Words: player2Words });
+        setCurrentWordIndex(0);
+        setCurrentWord(player1Words[0]);
+        setPlayerDirection(1);
+    };;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const startRound = async () => {
-        const { list_1, list_2 } = await getFrenchWords(numWordsPerRound, words.player1Words.concat(words.player2Words));
-        if (list_1 && list_2) {
-            setWords({ player1Words: list_1, player2Words: list_2 });
-        }
+        const [player1Words, player2Words] = await getFrenchWords(numWordsPerRound, words.player1Words.concat(words.player2Words));
+        setWords({ player1Words: player1Words, player2Words: player2Words });
+        setCurrentWordIndex(0);
+        setCurrentWord(player1Words[0]);
+        setPlayerDirection(1);
     };
 
     const handleValiderMot = () => {
-        setCurrentWordIndex(prevIndex => prevIndex + 1);
+        if (currentWordIndex === words.player1Words.length - 1) {
+            setCurrentWordIndex(0);
+            setPlayerDirection(2);
+        } else {
+            setCurrentWordIndex(prevIndex => prevIndex + 1);
+        }
         setTeamScore(prevScore => prevScore + 1);
         axios.post("/team/update", { teamScore });
         chronoRef.current.reset();
     };
 
     const handleRefuserMot = () => {
-        setCurrentWordIndex(prevIndex => prevIndex + 1);
+        if (currentWordIndex === words.player1Words.length - 1) {
+            setCurrentWordIndex(0);
+            setPlayerDirection(2);
+        } else {
+            setCurrentWordIndex(prevIndex => prevIndex + 1);
+        }
         chronoRef.current.reset();
-    };
+    };;
 
 
     const handleTimeout = () => {
@@ -115,7 +121,6 @@ const GameGM = () => {
     }, []);
 
     useEffect(() => {
-        // startRound();
         if (currentWordIndex >= 0) {
             setCurrentWord(
                 playerDirection === 1
@@ -158,52 +163,46 @@ const GameGM = () => {
                         </div>
                     </div>
                 </div>
+                <div>
+                    Mot actuel: {currentWord}
+                </div>
                 <div className='GM-player-main'>
                     <div>
                         <div className='GM-ul-player'>Pseudo : player 1</div>
-                        <div>
-                            {words.player1Words && words.player1Words.map((wordList, index) => (
-                                <li className='GM-ul-player' key={index}>
-                                    {wordList.map((word, wordIndex) => (
-                                        <div
-                                            key={wordIndex}
-                                            style={{
-                                                border: index === currentWordIndex && playerDirection === 1 && wordIndex === 0 ? '2px solid green' : 'none',
-                                                color: index < currentWordIndex ? 'green' : 'white',
-                                            }}
-                                        >
-                                            {word}
-                                        </div>
-                                    ))}
-                                </li>
+                        <div className='GM-li-player' >
+                            {words.player1Words && words.player1Words.map((word, index) => (
+                                <span
+                                    key={index}
+                                    style={{
+                                        border: playerDirection === 1 && index === currentWordIndex ? '2px solid green' : 'none',
+                                        color: playerDirection === 1 && index < currentWordIndex ? 'green' : 'white',
+                                    }}
+                                >
+                                    {word}
+                                </span>
                             ))}
                         </div>
                     </div>
                     <div>
                         <div className='GM-ul-player'>Pseudo : player 2</div>
-                        <div>
-
-                            {words.player2Words && words.player2Words.map((wordList, index) => (
-                                <li className='GM-ul-player' key={index}>
-                                    {wordList.map((word, wordIndex) => (
-                                        <div
-                                            key={wordIndex}
-                                            style={{
-                                                border: index === currentWordIndex && playerDirection === 2 && wordIndex === 0 ? '2px solid green' : 'none',
-                                                color: index < currentWordIndex ? 'green' : 'white',
-                                            }}
-                                        >
-                                            {word}
-                                        </div>
-                                    ))}
-                                </li>
+                        <div className='GM-li-player' >
+                            {words.player2Words && words.player2Words.map((word, index) => (
+                                <span
+                                    key={index}
+                                    style={{
+                                        border: playerDirection === 2 && index === currentWordIndex ? '2px solid green' : 'none',
+                                        color: playerDirection === 2 && index < currentWordIndex ? 'green' : 'white',
+                                    }}
+                                >
+                                    {word}
+                                </span>
                             ))}
                         </div>
-                        <div>
-                            Mot actuel: {currentWord}
-                        </div>
+                       
                     </div>
+                    
                 </div>
+               
             </div>
         </div>
     );
