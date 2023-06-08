@@ -87,7 +87,7 @@ const GameGM = () => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const startRound = async () => {
-        const { list_1, list_2 } = await getFrenchWords(numWordsPerRound_2, words.player1Words.concat(words.player2Words));
+        const { list_1, list_2 } = await getFrenchWords(numWordsPerRound, words.player1Words.concat(words.player2Words));
         if (list_1 && list_2) {
             setWords({ player1Words: list_1, player2Words: list_2 });
         }
