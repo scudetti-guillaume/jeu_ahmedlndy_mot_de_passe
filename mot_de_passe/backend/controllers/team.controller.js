@@ -81,7 +81,7 @@ exports.wordList = async (req, res) => {
         list_2.push(team.wordlist_2)
     });
 
-    // if (list_1[0].length == 0 && list_2[0].length == 0 ){
+    if (list_1[0].length == 0 && list_2[0].length == 0 ){
     try {
         const updateQuery = {
             $push: {
@@ -94,9 +94,9 @@ exports.wordList = async (req, res) => {
     } catch (err) {
         res.status(400).json(err);
     }
-    // }else{
-    //     res.status(200).json({list_1 , list_2});
-    // }
+    }else{
+        res.status(200).json({list_1 , list_2});
+    }
 }
 
 exports.regenList = async (req, res) => {

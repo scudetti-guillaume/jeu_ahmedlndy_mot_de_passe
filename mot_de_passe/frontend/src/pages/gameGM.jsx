@@ -79,18 +79,18 @@ const GameGM = () => {
     }
 
     const regenWordList = async () => {
-        const [list_1, list_2] = await regenWords(numWordsPerRound_2, words.player1Words.concat(words.player2Words));
-        setWords({ player1Words: list_1, player2Words: list_2 });
-        setCurrentWordIndex(0);
-        setCurrentWord(list_1[0]);
+        const { list_1, list_2 } = await regenWords(numWordsPerRound_2, words.player1Words.concat(words.player2Words));
+        if (list_1 && list_2) {
+            setWords({ player1Words: list_1, player2Words: list_2 });
+        }
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const startRound = async () => {
-        const [list_1, list_2] = await getFrenchWords(numWordsPerRound, words.player1Words.concat(words.player2Words))
-        setWords({ player1Words: list_1, player2Words: list_2 });
-        setCurrentWordIndex(0);
-        setCurrentWord(list_1[0]);
+        const { list_1, list_2 } = await getFrenchWords(numWordsPerRound_2, words.player1Words.concat(words.player2Words));
+        if (list_1 && list_2) {
+            setWords({ player1Words: list_1, player2Words: list_2 });
+        }
     };
 
     const handleValiderMot = () => {
@@ -162,32 +162,41 @@ const GameGM = () => {
                     <div>
                         <div className='GM-ul-player'>Pseudo : player 1</div>
                         <div>
-                            {words.player1Words.map((word, index) => (
-                                <span
-                                    key={index}
-                                    style={{
-                                        border: index === currentWordIndex && playerDirection === 1 ? '2px solid green' : 'none',
-                                        color: index < currentWordIndex ? 'green' : 'white',
-                                    }}
-                                >
-                                    {word}
-                                </span>
+                            {words.player1Words && words.player1Words.map((wordList, index) => (
+                                <li className='GM-ul-player' key={index}>
+                                    {wordList.map((word, wordIndex) => (
+                                        <div
+                                            key={wordIndex}
+                                            style={{
+                                                border: index === currentWordIndex && playerDirection === 1 && wordIndex === 0 ? '2px solid green' : 'none',
+                                                color: index < currentWordIndex ? 'green' : 'white',
+                                            }}
+                                        >
+                                            {word}
+                                        </div>
+                                    ))}
+                                </li>
                             ))}
                         </div>
                     </div>
                     <div>
                         <div className='GM-ul-player'>Pseudo : player 2</div>
                         <div>
-                            {words.player2Words.map((word, index) => (
-                                <span
-                                    key={index}
-                                    style={{
-                                        border: index === currentWordIndex && playerDirection === 2 ? '2px solid green' : 'none',
-                                        color: index < currentWordIndex ? 'green' : 'white',
-                                    }}
-                                >
-                                    {word}
-                                </span>
+
+                            {words.player2Words && words.player2Words.map((wordList, index) => (
+                                <li className='GM-ul-player' key={index}>
+                                    {wordList.map((word, wordIndex) => (
+                                        <div
+                                            key={wordIndex}
+                                            style={{
+                                                border: index === currentWordIndex && playerDirection === 2 && wordIndex === 0 ? '2px solid green' : 'none',
+                                                color: index < currentWordIndex ? 'green' : 'white',
+                                            }}
+                                        >
+                                            {word}
+                                        </div>
+                                    ))}
+                                </li>
                             ))}
                         </div>
                         <div>
