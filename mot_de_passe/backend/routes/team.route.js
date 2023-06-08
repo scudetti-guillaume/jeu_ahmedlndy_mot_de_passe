@@ -28,20 +28,25 @@ router.post("/words", (req, res) => {
     team.wordList(req, res);
 });
 
+router.get("/dataGame", (req, res) => {
+    // req.app.get("io").emit("startgame", res.body);
+    team.getData(req, res);
+});
+
 router.patch("/regenwords", (req, res) => {
     // req.app.get("io").emit("startgame", res.body);
     team.regenList(req, res);
 });
 
-router.get("/getWords", (req, res) => {
-    // req.app.get("io").emit("startgame", res.body);
-    team.getWordList(req, res);
-});
+// router.get("/getWords", (req, res) => {
+//     // req.app.get("io").emit("startgame", res.body);
+//     team.getWordList(req, res);
+// });
 
-router.post("/update", (req, res) => {
-    // req.app.get("io").emit("startgame", res.body);
-    team.update(req, res);
-});
+// router.post("/update", (req, res) => {
+//     // req.app.get("io").emit("startgame", res.body);
+//     team.update(req, res);
+// });
 
 module.exports = router;
 

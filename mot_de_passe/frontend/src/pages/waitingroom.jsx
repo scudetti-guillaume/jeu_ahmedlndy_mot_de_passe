@@ -37,21 +37,8 @@ const Waitingroom = () => {
         };
         fetchPlayers();
     }, []);
-    
-    
-     
 
     useEffect(() => {
-        // const fetchGameMaster = async () => {
-        //     try {
-        //         const response = await axios.get('/gamemaster/gamemaster');
-        //         console.log(response.data[0].role);
-        //         setUser(response.data[0].role);
-        //     } catch (error) {
-        //         console.error('Erreur lors de la récupération du gamemaster :', error);
-        //     }
-        // };
-        // fetchGameMaster();
         const getGameMaster = async () => {
             try {
                 const data = localStorage.getItem('role')
@@ -63,16 +50,6 @@ const Waitingroom = () => {
     }, []);
 
     useEffect(() => {
-        // const fetchGameMaster = async () => {
-        //     try {
-        //         const response = await axios.get('/gamemaster/gamemaster');
-        //         console.log(response.data[0].role);
-        //         setUser(response.data[0].role);
-        //     } catch (error) {
-        //         console.error('Erreur lors de la récupération du gamemaster :', error);
-        //     }
-        // };
-        // fetchGameMaster();
         const getUserId = async () => {
             try {
                 const data = localStorage.getItem('user')
@@ -96,6 +73,7 @@ const Waitingroom = () => {
                     if (teamSize % 2 === 0) {
                         const player1 = { ...playerToAdd, role: 'Joueur 1' };
                         setTeam1((prevTeam1) => [...prevTeam1, player1]);
+                        console.log(player1);
                     } else {
                         const player2 = { ...playerToAdd, role: 'Joueur 2' };
                         setTeam1((prevTeam1) => [
@@ -128,14 +106,14 @@ const Waitingroom = () => {
                 if (userId === player._id) {
                     navigate('/gamePlayer');
                 }
-                if (user === 'gameMaster' ) {
+                if (user === 'gameMaster') {
                     navigate('/gameGM');
                 }
-                
+
             });
-            
+
             // navigate('/game', { players: team1 });
-           
+
         });
 
         // Clean up the Socket.IO connection on component unmount
@@ -163,22 +141,30 @@ const Waitingroom = () => {
         e.preventDefault();
         const playerId = e.dataTransfer.getData('playerId');
         const playerToAdd = players.find((player) => player._id === playerId);
+        let player = {}
+        //  let player2 = {}
+
         if (playerToAdd) {
             const teamSize = team1.length;
             if (teamSize < 2) {
                 if (teamSize % 2 === 0) {
-                    const player1 = { ...playerToAdd, role: 'Joueur 1' };
-                    setTeam1((prevTeam1) => [...prevTeam1, player1]);
+                    player = { ...playerToAdd, role: 1 };
+                    setTeam1((prevTeam1) => [...prevTeam1, player]);
+
+                    // console.log(player1);
                 } else {
-                    const player2 = { ...playerToAdd, role: 'Joueur 2' };
+                    player = { ...playerToAdd, role: 2 };
                     setTeam1((prevTeam1) => [
                         ...prevTeam1.slice(0, teamSize - 1),
-                        player2,
+                        player,
                         prevTeam1[teamSize - 1],
+
                     ]);
                 }
                 setPlayers((prevPlayers) => prevPlayers.filter((player) => player._id !== playerId));
-                axios.post("/team/addplayer", { playerId: playerId }).then((doc) => {
+                console.log(player.role);
+                // console.log(player2);
+                axios.post("/team/addplayer", { playerId: playerId, playerNumber: player.role }).then((doc) => {
                     console.log(doc);
                 })
             } else {
@@ -206,7 +192,7 @@ const Waitingroom = () => {
             axios.post("/team/launchgame").then((doc) => {
                 console.log(doc);
             })
-            
+
             // Rediriger vers la page "/game" avec les joueurs sélectionnés
             // navigate('/game', { players: team1 });
         }
@@ -240,10 +226,10 @@ const Waitingroom = () => {
                             <li className="wrTMlistLi" key={player._id}>
                                 <div className="wrTMlistLiDiv">
                                     <p className="wrTMlistLiPlayer">Joueur {index % 2 === 0 ? 1 : 2}:</p>
-                                <p className="wrTMlistLiPseudo">{player.pseudo}</p>
+                                    <p className="wrTMlistLiPseudo">{player.pseudo}</p>
                                 </div>
-                                {(user === 'gameMaster' || userId === player._id ) &&  (
-                                <button className='wrTMButton' onClick={() => handleRemovePlayer(player._id)}>Retirer le joueur</button>
+                                {(user === 'gameMaster' || userId === player._id) && (
+                                    <button className='wrTMButton' onClick={() => handleRemovePlayer(player._id)}>Retirer le joueur</button>
                                 )}
                             </li>
                         ))}

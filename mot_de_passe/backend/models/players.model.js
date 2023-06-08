@@ -15,6 +15,10 @@ const playerSchema = mongoose.Schema(
         selected : {
          type : Boolean,
          default : false
+        },
+        Number : {
+        type : Number,
+        default: 0     
         }
         
     },

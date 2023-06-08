@@ -2,8 +2,8 @@ const mongoose = require("mongoose");
 
 const teamSchema = mongoose.Schema(
     {
-        player: {
-            type: [
+        players:
+            [
                 {
                     playerId:
                     {
@@ -14,31 +14,36 @@ const teamSchema = mongoose.Schema(
                         type: String,
                         require: true
                     },
-                    speak: {
-                        type: Boolean,
-                        default: false
-                    }
-                }
-            ]
-        },
+                    playerNumber: {
+                        type: Number,
+                        default : 0
+                    },
+                    wordlist: [String],
+                },
+
+            ],
+
         points: {
             type: Number,
-            default : 0
+            default: 0
         },
-        rounds : {
-        type : Number,
-        default : 1
+        rounds: {
+            type: Number,
+            default: 1
         },
-        currentWord : {
-        type : String
+        currentWord: {
+            type: String,
+            default : null
         },
-        wordlist_1: [String],
-        wordlist_2: [String],
-        
+        currentWordIndex: {
+            type: Number,
+            default: 0
+        },
+ 
     },
 
-{
-    timestamps: true,
+    {
+        timestamps: true,
     }
 );
 

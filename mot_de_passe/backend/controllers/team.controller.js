@@ -3,14 +3,15 @@ const PlayerModel = require("../models/players.model");
 const jwt = require("jsonwebtoken");
 
 exports.addPlayer = async (req, res) => {
-    const { playerId } = req.body
+    const { playerId, playerNumber } = req.body
+    console.log(req.body);
     try {
-        const addPlayer = await TeamModel.findOneAndUpdate({}, { $push: { playerId } }, { upsert: true, });
-        const PlayerListTrue = await PlayerModel.findOneAndUpdate({ _id: playerId }, { selected: true }, { new: true });
+        // const addPlayer = await TeamModel.findOneAndUpdate({}, { $push: { playerId } }, { upsert: true, });
+        const PlayerListTrue = await PlayerModel.findOneAndUpdate({ _id: playerId }, { selected: true, Number: playerNumber }, { new: true });
         console.log(PlayerListTrue);
-        if (addPlayer && PlayerListTrue) {
+        if (PlayerListTrue) {
             req.app.get("io").emit("playerAdded", playerId);
-            res.status(200).json(addPlayer);
+            res.status(200).json(PlayerListTrue);
         }
     } catch (error) {
         res.status(400).json("erreur d'ajout de joueur")
@@ -20,9 +21,9 @@ exports.addPlayer = async (req, res) => {
 exports.removePlayer = async (req, res, next) => {
     const { playerId } = req.body
     try {
-        const removedPlayer = await TeamModel.findOneAndUpdate({}, { $pull: { playerId } }, { upsert: true, },);
-        const PlayerListFalse = await PlayerModel.findOneAndUpdate({ _id: playerId }, { selected: false }, { new: true });
-        if (removedPlayer && PlayerListFalse) {
+        // const removedPlayer = await TeamModel.findOneAndUpdate({}, { $pull: { playerId } }, { upsert: true, },);
+        const PlayerListFalse = await PlayerModel.findOneAndUpdate({ _id: playerId }, { selected: false, Number: 0 }, { new: true });
+        if (PlayerListFalse) {
             req.app.get("io").emit("playerRemoved", playerId);
             res.status(200).json('Joueur supprimé' + '' + playerId);
         } else {
@@ -40,7 +41,7 @@ exports.getTeam = async (req, res) => {
 
     } catch (err) {
         res.status(400).json(err)
-// 
+        // 
     }
 }
 
@@ -54,7 +55,7 @@ exports.startGame = async (req, res) => {
             TeamModel.findOneAndUpdate(
                 {},
                 {
-                    $push: { player: { playerId: player._id, playerPseudo: player.pseudo } }
+                    $push: { players: { playerId: player._id, playerPseudo: player.pseudo, playerNumber: player.Number } }
                 },
                 { upsert: true, new: true }
             )
@@ -62,7 +63,6 @@ exports.startGame = async (req, res) => {
                     console.log(team.id)
                     team.save()
                 })
-
         });
         await res.status(200).json(teamStart)
         await req.app.get("io").emit("startGame", teamStart);
@@ -73,69 +73,103 @@ exports.startGame = async (req, res) => {
 
 exports.wordList = async (req, res) => {
     const { player1Words, player2Words } = req.body;
+    // console.log(req.body);
     const list_1 = []
     const list_2 = []
     const askwordlist = await TeamModel.find({});
     askwordlist.forEach(team => {
-        list_1.push(team.wordlist_1)
-        list_2.push(team.wordlist_2)
+        team.players.forEach(player => {
+            list_1.push(player.wordlist)
+            list_2.push(player.wordlist)
+        })
     });
+    if (list_1[0].length == 0 && list_2[0].length == 0) {
+        try {
+            const updateQuery = {
+                $push: {
+                    "players.$[elem1].wordlist": { $each: player1Words },
+                    "players.$[elem2].wordlist": { $each: player2Words }
+                }
+            };
+            const options = {
+                arrayFilters: [
+                    { "elem1.playerNumber": 1 },
+                    { "elem2.playerNumber": 2 }
+                ]
+            };
+            await TeamModel.updateMany({}, updateQuery, options);
+            res.status(200).json({ list_1: player1Words, list_2: player2Words });
+        } catch (err) {
+            res.status(400).json(err);
+        }
+    } else {
+        console.log('la');
+        res.status(200).json({ list_1, list_2 });
+    }
+}
 
-    if (list_1[0].length == 0 && list_2[0].length == 0 ){
+exports.getData = async (req,res) => {
     try {
-        const updateQuery = {
-            $push: {
-                wordlist_1: { $each: player1Words },
-                wordlist_2: { $each: player2Words }
-            }
-        };
-       await TeamModel.updateMany({}, updateQuery);
-        res.status(200).json({ list_1: player1Words, list_2: player2Words });
+        const PlayerList = await TeamModel.find({});
+        console.log(PlayerList);
+        res.status(200).json(PlayerList)
+
     } catch (err) {
-        res.status(400).json(err);
+        res.status(400).json(err)
+        // 
     }
-    }else{
-        res.status(200).json({list_1 , list_2});
-    }
+
 }
 
 exports.regenList = async (req, res) => {
     try {
-        await TeamModel.updateMany({}, { $unset: { wordlist_1: 1, wordlist_2: 1 } });
-        res.status(200).json('Word lists have been removed successfully.');
-    } catch (error) {
-        res.status(400).json('Failed to remove word lists.');
+        const updateQuery = {
+            $unset: {
+                "players.$[elem1].wordlist": 1,
+                "players.$[elem2].wordlist": 1
+            }
+        };
+        const options = {
+            arrayFilters: [
+                { "elem1.playerNumber": 1 },
+                { "elem2.playerNumber": 2 }
+            ]
+        };
+        await TeamModel.updateMany({}, updateQuery, options);
+        res.status(200).json({ message: "Wordlists removed successfully." });
+    } catch (err) {
+        res.status(400).json(err);
     }
 };
 
 
-exports.getWordList = async (req, res) => {
-    const list_1 = []
-    const list_2 = []
-    const askwordlist = await TeamModel.find({});
-    askwordlist.forEach(team => {
-        list_1.push(team.wordlist_1)
-        list_2.push(team.wordlist_2)
-    });
-    if (list_1[0].length != 0 && list_2[0].length != 0) {
-        res.status(200).json({ list_1, list_2 });
-    } else {
-        res.status(300).json('erreur de chargement de la wordlist');
-    }
-}
+// exports.getWordList = async (req, res) => {
+//     const list_1 = []
+//     const list_2 = []
+//     const askwordlist = await TeamModel.find({});
+//     askwordlist.forEach(team => {
+//         list_1.push(team.wordlist_1)
+//         list_2.push(team.wordlist_2)
+//     });
+//     if (list_1[0].length != 0 && list_2[0].length != 0) {
+//         res.status(200).json({ list_1, list_2 });
+//     } else {
+//         res.status(300).json('erreur de chargement de la wordlist');
+//     }
+// }
 
-exports.update = async (req, res) => {
-    const list_1 = []
-    const list_2 = []
-    const askwordlist = await TeamModel.find({});
-    askwordlist.forEach(team => {
-        list_1.push(team.wordlist_1)
-        list_2.push(team.wordlist_2)
-    });
-    if (list_1[0].length != 0 && list_2[0].length != 0) {
-        res.status(200).json({ list_1, list_2 });
-    } else {
-        res.status(300).json('erreur de chargement de la wordlist');
-    }
-}
+// exports.update = async (req, res) => {
+//     const list_1 = []
+//     const list_2 = []
+//     const askwordlist = await TeamModel.find({});
+//     askwordlist.forEach(team => {
+//         list_1.push(team.wordlist_1)
+//         list_2.push(team.wordlist_2)
+//     });
+//     if (list_1[0].length != 0 && list_2[0].length != 0) {
+//         res.status(200).json({ list_1, list_2 });
+//     } else {
+//         res.status(300).json('erreur de chargement de la wordlist');
+//     }
+// }
 
