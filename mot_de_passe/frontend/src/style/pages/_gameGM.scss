@@ -47,6 +47,31 @@
     border: solid 1px rgb(130, 204, 238);
     padding: 2%;
     border-radius: 10px;
+}
 
+.GM-ul-player{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
 
+.GM-li-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.GM-current-word {
+    border: 2px solid green;
+    color: white;
+    background-color: green;
+}
+
+.GM-accepted-word {
+    color: green;
+}
+
+.GM-word {
+    color: black;
 }

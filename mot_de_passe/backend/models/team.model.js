@@ -22,8 +22,15 @@ const teamSchema = mongoose.Schema(
             ]
         },
         points: {
-            type: String,
+            type: Number,
             default : 0
+        },
+        rounds : {
+        type : Number,
+        default : 1
+        },
+        currentWord : {
+        type : String
         },
         wordlist_1: [String],
         wordlist_2: [String],

@@ -199,11 +199,16 @@ const Waitingroom = () => {
     };
 
     const handleStartGame = () => {
+        // const data = localStorage.getItem('role')
+        // console.log("lz" + data);
+        console.log(setTeam1);
         if (user === 'gameMaster' && team1.length === 2) {
             axios.post("/team/launchgame").then((doc) => {
                 console.log(doc);
             })
-
+            
+            // Rediriger vers la page "/game" avec les joueurs sélectionnés
+            // navigate('/game', { players: team1 });
         }
     };
 

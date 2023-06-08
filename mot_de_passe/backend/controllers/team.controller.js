@@ -46,7 +46,7 @@ exports.getTeam = async (req, res) => {
 
 exports.startGame = async (req, res) => {
     const PlayerListTrue = await PlayerModel.find({ selected: true });
-    console.log(PlayerListTrue);
+    // console.log(PlayerListTrue);
     const teamStart = []
     teamStart.push(PlayerListTrue)
     try {
@@ -79,15 +79,9 @@ exports.wordList = async (req, res) => {
     askwordlist.forEach(team => {
         list_1.push(team.wordlist_1)
         list_2.push(team.wordlist_2)
-        // console.log(team.wordlist_1);
-        // console.log(team.wordlist_2);
     });
 
-    console.log(list_1[0].length);
-    console.log(list_2[0].length);
-
-    if (list_1[0].length == 0 && list_2[0].length == 0 ){
-
+    // if (list_1[0].length == 0 && list_2[0].length == 0 ){
     try {
         const updateQuery = {
             $push: {
@@ -95,14 +89,53 @@ exports.wordList = async (req, res) => {
                 wordlist_2: { $each: player2Words }
             }
         };
-
-        const wordlist = await TeamModel.updateMany({}, updateQuery);
-
-        res.status(200).json("Mots ajoutés avec succès !" + wordlist);
+       await TeamModel.updateMany({}, updateQuery);
+        res.status(200).json({ list_1: player1Words, list_2: player2Words });
     } catch (err) {
         res.status(400).json(err);
     }
-    }else{
-        res.status(200).json("Mots deja ajoutés avec succès !");
+    // }else{
+    //     res.status(200).json({list_1 , list_2});
+    // }
+}
+
+exports.regenList = async (req, res) => {
+    try {
+        await TeamModel.updateMany({}, { $unset: { wordlist_1: 1, wordlist_2: 1 } });
+        res.status(200).json('Word lists have been removed successfully.');
+    } catch (error) {
+        res.status(400).json('Failed to remove word lists.');
+    }
+};
+
+
+exports.getWordList = async (req, res) => {
+    const list_1 = []
+    const list_2 = []
+    const askwordlist = await TeamModel.find({});
+    askwordlist.forEach(team => {
+        list_1.push(team.wordlist_1)
+        list_2.push(team.wordlist_2)
+    });
+    if (list_1[0].length != 0 && list_2[0].length != 0) {
+        res.status(200).json({ list_1, list_2 });
+    } else {
+        res.status(300).json('erreur de chargement de la wordlist');
     }
 }
+
+exports.update = async (req, res) => {
+    const list_1 = []
+    const list_2 = []
+    const askwordlist = await TeamModel.find({});
+    askwordlist.forEach(team => {
+        list_1.push(team.wordlist_1)
+        list_2.push(team.wordlist_2)
+    });
+    if (list_1[0].length != 0 && list_2[0].length != 0) {
+        res.status(200).json({ list_1, list_2 });
+    } else {
+        res.status(300).json('erreur de chargement de la wordlist');
+    }
+}
+
