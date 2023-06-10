@@ -43,10 +43,10 @@ router.patch("/regenwords", (req, res) => {
 //     team.getWordList(req, res);
 // });
 
-// router.post("/update", (req, res) => {
-//     // req.app.get("io").emit("startgame", res.body);
-//     team.update(req, res);
-// });
+router.post("/update", (req, res) => {
+    // req.app.get("io").emit("startgame", res.body);
+    team.update(req, res);
+});
 
 module.exports = router;
 

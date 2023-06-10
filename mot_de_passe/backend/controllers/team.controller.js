@@ -122,6 +122,7 @@ exports.getData = async (req,res) => {
 }
 
 exports.regenList = async (req, res) => {
+    
     try {
         const updateQuery = {
             $unset: {
@@ -143,33 +144,22 @@ exports.regenList = async (req, res) => {
 };
 
 
-// exports.getWordList = async (req, res) => {
-//     const list_1 = []
-//     const list_2 = []
-//     const askwordlist = await TeamModel.find({});
-//     askwordlist.forEach(team => {
-//         list_1.push(team.wordlist_1)
-//         list_2.push(team.wordlist_2)
-//     });
-//     if (list_1[0].length != 0 && list_2[0].length != 0) {
-//         res.status(200).json({ list_1, list_2 });
-//     } else {
-//         res.status(300).json('erreur de chargement de la wordlist');
-//     }
-// }
+exports.update = async (req, res) => {
+console.log(req.body);
 
-// exports.update = async (req, res) => {
-//     const list_1 = []
-//     const list_2 = []
-//     const askwordlist = await TeamModel.find({});
-//     askwordlist.forEach(team => {
-//         list_1.push(team.wordlist_1)
-//         list_2.push(team.wordlist_2)
-//     });
-//     if (list_1[0].length != 0 && list_2[0].length != 0) {
-//         res.status(200).json({ list_1, list_2 });
-//     } else {
-//         res.status(300).json('erreur de chargement de la wordlist');
-//     }
-// }
+    try {
+        // Supprimer tous les documents de la collection
+        await TeamModel.deleteMany();
 
+        // Récupérer les nouvelles données à insérer
+        const newGameData = req.body.gameData;
+
+        // Insérer les nouvelles données dans la collection
+        await TeamModel.insertMany(newGameData);
+
+        res.status(200).json({ message: "Mise à jour effectuée avec succès." });
+    } catch (error) {
+        res.status(400).json({ message: "Une erreur s'est produite lors de la mise à jour des données.", error });
+    }
+
+}

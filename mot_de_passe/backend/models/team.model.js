@@ -18,7 +18,20 @@ const teamSchema = mongoose.Schema(
                         type: Number,
                         default : 0
                     },
-                    wordlist: [String],
+                    wordlist: [
+                        {
+                            word: {
+                                type: String,
+                                required: true
+                            },
+                            status: {
+                                type: String,
+                                enum: [0, 1 ,2],
+                                default: 0
+                            }
+                        }
+                    
+                    ],
                 },
 
             ],
@@ -34,6 +47,9 @@ const teamSchema = mongoose.Schema(
         currentWord: {
             type: String,
             default : null
+        }, currentPlayerNumber: {
+            type: Number,
+            default: 1
         },
         currentWordIndex: {
             type: Number,

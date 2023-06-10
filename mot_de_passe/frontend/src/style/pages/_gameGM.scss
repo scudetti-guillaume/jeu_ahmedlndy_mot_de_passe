@@ -56,22 +56,31 @@
     justify-content: center;
 }
 
-.GM-li-player {
+.GM-player-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
-.GM-current-word {
-    border: 2px solid green;
-    color: white;
+
+
+.GM-li-player {
+    padding: 5px;
+    margin-bottom: 5px;
+    border: 1px solid transparent;
+    list-style-type: none;
+}
+
+.current-word {
+ border : solid 2px #5a794f;
+}
+
+.valider {
+    color: #fff;
     background-color: green;
 }
 
-.GM-accepted-word {
-    color: green;
-}
-
-.GM-word {
-    color: black;
+.refuser {
+    color: #fff;
+    background-color: red;
 }

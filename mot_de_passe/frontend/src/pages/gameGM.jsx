@@ -5,17 +5,15 @@ import { io } from 'socket.io-client';
 
 const GameGM = () => {
     const chronoRef = useRef(null);
+    const [gameData, setGameData] = useState(null);
     const [round, setRound] = useState(1);
     const [teamScore, setTeamScore] = useState(0);
-    const [playerDirection, setPlayerDirection] = useState(1);
-    const [words, setWords] = useState({ player1Words: [], player2Words: [] });
     const [currentWordIndex, setCurrentWordIndex] = useState(0);
-    const [currentWord, setCurrentWord] = useState('');
-    const [playerPseudo, setPlayerPseudo] = useState();
-    const [gameData, setGameData] = useState(null);
+    const [currentPlayerNumbers, setCurrentplayerNumbers] = useState(2)
+    const currentPlayerNumber = gameData && gameData[0].players[0].playerNumber;
     const numWordsPerRound = 6;
     const numWordsPerRound_2 = 12;
-    const numRounds = 2;
+
 
     const getWords = async (numWords, usedWords) => {
         try {
@@ -29,8 +27,8 @@ const GameGM = () => {
                 const j = Math.floor(Math.random() * (i + 1));
                 [newWords[i], newWords[j]] = [newWords[j], newWords[i]];
             }
-            const player1Words = newWords.slice(0, numWords / 2);
-            const player2Words = newWords.slice(numWords / 2, numWords);
+            const player1Words = newWords.slice(0, numWords / 2).map(word => ({ word, status: 0 }));
+            const player2Words = newWords.slice(numWords / 2, numWords).map(word => ({ word, status: 0 }));
             await axios.post("/team/words", { player1Words, player2Words });
         } catch (error) {
             console.log(error);
@@ -43,17 +41,14 @@ const GameGM = () => {
         try {
             await getWords(numWordsPerRound, [])
             const response = await axios.get("/team/dataGame");
-            // console.log(response);
+            console.log(response.data);
             setGameData(response.data);
+
         } catch (error) {
             console.log(error);
         }
     };
-    
-    useEffect(() => {
-        getDataGame();
-    }, []);
-    
+
     const getDataGame_2 = async () => {
         try {
             await getWords(numWordsPerRound_2, [])
@@ -63,7 +58,7 @@ const GameGM = () => {
             console.log(error);
         }
     };
-    
+
     const regenWords = async () => {
         try {
             await axios.patch("/team/regenwords")
@@ -75,70 +70,180 @@ const GameGM = () => {
     }
 
     useEffect(() => {
-        getDataGame_2();
+        getDataGame();
+        // setCurrentWordIndex(gameData[0].currentWordIndex);
+        // console.log(gameData[0].currentindex);
+        // setTeamScore(gameData[0].points);
+        // console.log(gameData[0].points);
     }, []);
- 
+
 
     useEffect(() => {
         if (gameData) {
-            console.log(gameData[0].players);
+            setCurrentWordIndex(gameData[0].currentWordIndex);
+            setTeamScore(gameData[0].points)
+            setCurrentplayerNumbers(gameData[0].currentPlayerNumber)
+            console.log('al' + currentPlayerNumbers);
+            // if (currentWordIndex === currentPlayerNumbers.wordlist.length - 1){
+
+            // }
         }
-    }, [gameData]);
- 
-  
+    }, [currentPlayerNumbers, gameData]);
 
-    // const startRound = async () => {
-    //     const [player1Words, player2Words] = await getWords(numWordsPerRound, words.player1Words.concat(words.player2Words));
-    //     // setWords({ player1Words: player1Words, player2Words: player2Words });
-    //     // setCurrentWordIndex(0);
-    //     // setCurrentWord(player1Words[0]);
-    //     // setPlayerDirection(1);
-    // };
 
-    // const regenWordList = async () => {
-    //     const [player1Words, player2Words] = await regenWords(numWordsPerRound_2, words.player1Words.concat(words.player2Words));
-    //     setWords({ player1Words: player1Words, player2Words: player2Words });
-    //     setCurrentWordIndex(0);
-    //     setCurrentWord(player1Words[0]);
-    //     setPlayerDirection(1);
-    // };
 
- 
+    const handleValiderMot = async () => {
+        const updatedGameData = [...gameData]; // Create a copy of the gameData array
+        const currentPlayer = updatedGameData[0].players[currentPlayerNumbers];
+        console.log(currentPlayerNumbers);
+        // console.log(updatedGameData[0].players[currentPlayerNumbers]);
+        console.log(currentPlayer);// Assuming the first player is player1
+        const currentWord = currentPlayer.wordlist[currentWordIndex];
+        const currentWordIndexUpdate = 0
 
-    const handleValiderMot = () => {
-        if (currentWordIndex === words.player1Words.length - 1) {
-            setCurrentWordIndex(0);
-            setPlayerDirection(2);
+        // Update the status of the current word to 1 (valider)
+
+        // Check if all words in the current player's wordlist have been processed
+        if (currentWordIndex === currentPlayer.wordlist.length - 1 && updatedGameData[0].currentPlayerNumber === 1) {
+            // Switch to the second player's wordlist
+            console.log('la');
+            setRound(2)
+            setCurrentplayerNumbers(2)
+            setCurrentWordIndex(0)
+            setTeamScore((prevScore) => prevScore + 1);
+            currentWord.status = 1;
+            updatedGameData[0].currentWordIndex = 0
+            updatedGameData[0].currentPlayerNumber = 0
+            updatedGameData[0].round = 2
+            updatedGameData[0].points = teamScore + 1
+            await axios.post("/team/update", { gameData: updatedGameData });
+            // console.log(updatedGameData);
+          
+            const response = await axios.get("/team/dataGame");
+            setGameData(response.data)
+            chronoRef.current.reset();
         } else {
-            setCurrentWordIndex(prevIndex => prevIndex + 1);
-        }
-        setTeamScore(prevScore => prevScore + 1);
-        console.log(teamScore);
-        // console.log(currentPlayerWords);
-        console.log(currentWord);
-        console.log(currentWordIndex);
+            console.log('laup');
+            currentWord.status = 1;
+            setTeamScore((prevScore) => prevScore + 1);
+            setCurrentWordIndex((prevScore) => prevScore + 1)
+            updatedGameData[0].points = teamScore + 1
+            updatedGameData[0].currentWordIndex = currentWordIndex + 1
 
-        axios.post("/team/update", { teamScore });
+            // updatedGameData[0].currentWordIndex = currentWordIndex + 1
+            // console.log(updatedGameData[0].points);
+            // Update the gameData with the modified data
+            // setGameData(updatedGameData);
+
+            // Make the API call to update the backend with the updated data
+            await axios.post("/team/update", { gameData: updatedGameData });
+        }
+
+        
+        const response = await axios.get("/team/dataGame");
+        setGameData(response.data)
         chronoRef.current.reset();
     };
 
     const handleRefuserMot = () => {
-        if (currentWordIndex === words.player1Words.length - 1) {
-            setCurrentWordIndex(0);
-            setPlayerDirection(2);
-        } else {
-            setCurrentWordIndex(prevIndex => prevIndex + 1);
-        }
+        // const updatedGameData = [...gameData]; // Create a copy of the gameData array
+        // const currentPlayer = updatedGameData[0].players[0]; // Assuming the first player is player1
+        // const currentWord = currentPlayer.wordlist[currentWordIndex];
+
+        // // Update the status of the current word to 2 (refuser)
+        // currentWord.status = 2;
+
+        // // Increment the current word index
+        // setCurrentWordIndex((prevIndex) => prevIndex + 1);
+
+        // // Check if all words in the current player's wordlist have been processed
+        // if (currentWordIndex === currentPlayer.wordlist.length - 1) {
+        //     // Switch to the second player's wordlist
+        //     const secondPlayer = updatedGameData[0].players[1]; // Assuming the second player is player2
+        //     setCurrentWordIndex(0); // Reset the current word index
+
+        //     // Check if all words in the second player's wordlist have been processed
+        //     if (secondPlayer.wordlist.length === currentWordIndex + 1) {
+        //         // All players have completed their wordlists, move to the next round or perform any necessary logic
+        //         // ...
+        //     }
+        // }
+
+        // // Update the gameData with the modified data
+        // setGameData(updatedGameData);
+
+        // // Make the API call to update the backend with the updated data
+        // axios.post("/team/update", { gameData: updatedGameData });
+
         chronoRef.current.reset();
-    };;
+    };
 
 
     const handleTimeout = () => {
         // Logique à exécuter lorsque le chrono atteint 0
         // ...
     };
-  
-    // useEffect(() => {
+
+    return (
+        <div className='GM-main'>
+            <div>
+                <h1>ahmed mot de passe</h1>
+            </div>
+
+            <div>
+                <h2>
+                    Manche <span>{round}</span>
+                </h2>
+                <div><button onClick={regenWords}>Regenerer une liste de mots</button></div>
+                <Chrono ref={chronoRef} initialTime={30} onTimeout={handleTimeout} />
+                <div className='GM-TeamScore-main'>
+                    <div className='GM-TeamScore'>
+                        <p>L'équipe a marqué : <span>{teamScore}</span></p>
+                    </div>
+                    <div className='GM-btn-word'>
+                        <div>
+                            <button className='GM-btn-word-btn-valide' onClick={handleValiderMot}>Valider mot</button>
+                        </div>
+                        <div>
+                            <button className='GM-btn-word-btn-refuse' onClick={handleRefuserMot}>Refuser mot</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className='GM-player-main'>
+                    {gameData &&
+                        gameData[0].players.map((player) => (
+                            <div className='GM-player-wrapper' key={player.playerId}>
+                                <h3>{player.playerPseudo}</h3>
+                                <ul>
+                                    {player.wordlist.map((wordObj, index) => (
+                                        <li
+                                            className={`GM-li-player ${player.playerNumber === currentPlayerNumbers && index === currentWordIndex
+                                                ? 'current-word'
+                                                : wordObj.status === 1
+                                                    ? 'valider'
+                                                    : wordObj.status === 2
+                                                        ? 'refuser'
+                                                        : ''
+                                                }`}
+                                            key={wordObj._id}
+                                        >
+                                            {wordObj.word}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                </div>
+
+            </div>
+        </div>
+    );
+};
+
+export default GameGM;
+
+   // useEffect(() => {
     //     if (currentWordIndex >= 0) {
     //         setCurrentWord(
     //             playerDirection === 1
@@ -155,55 +260,3 @@ const GameGM = () => {
     //     console.log(currentWord);
 
     // }, [currentWord, currentWordIndex, words.player1Words]);
-
-    return (
-        <div className='GM-main'>
-            <div>
-                <h1>ahmed mot de passe</h1>
-            </div>
-
-            <div>
-                <h2>
-                    Manche <span>{round}</span>
-                </h2>
-                <div><button onClick={regenWords}>Regenerer une liste les mots </button></div>
-                <Chrono ref={chronoRef} initialTime={30} onTimeout={handleTimeout} />
-                <div className='GM-TeamScore-main'>
-                    <div className='GM-TeamScore'>
-                        <p>L'équipe a marqué : <span>{teamScore}</span></p>
-                    </div>
-                    <div className='GM-btn-word'>
-                        <div>
-                            <button className='GM-btn-word-btn-valide' onClick={handleValiderMot}>Valider mot</button>
-                        </div>
-                        <div>
-                            <button className='GM-btn-word-btn-refuse' onClick={handleRefuserMot}>Refuser mot</button>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    Mot actuel: {currentWord}
-                </div>
-                <div className='GM-player-main'>
-                    <div>
-                        {gameData && gameData[0].players.map((player) => (
-                            <div key={player.playerId}>
-                                <h3>Joueur {player.playerNumber}</h3>
-                                <p>Pseudo : {player.playerPseudo}</p>
-                                <ul>
-                                    {player.wordlist.map((word) => (
-                                        <li key={word}>{word}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
-    );
-};
-
-export default GameGM;
