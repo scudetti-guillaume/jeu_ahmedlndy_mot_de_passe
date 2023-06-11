@@ -16,7 +16,7 @@ const teamSchema = mongoose.Schema(
                     },
                     playerNumber: {
                         type: Number,
-                        default : 0
+                        default: 0
                     },
                     wordlist: [
                         {
@@ -26,11 +26,11 @@ const teamSchema = mongoose.Schema(
                             },
                             status: {
                                 type: String,
-                                enum: [0, 1 ,2],
+                                enum: [0, 1, 2],
                                 default: 0
                             }
                         }
-                    
+
                     ],
                 },
 
@@ -46,8 +46,9 @@ const teamSchema = mongoose.Schema(
         },
         currentWord: {
             type: String,
-            default : null
-        }, currentPlayerNumber: {
+            default: null
+        }, 
+        currentPlayerNumber: {
             type: Number,
             default: 1
         },
@@ -55,7 +56,11 @@ const teamSchema = mongoose.Schema(
             type: Number,
             default: 0
         },
- 
+        currentAttempt : {
+            type: Number,
+            default: 1
+        }
+
     },
 
     {
