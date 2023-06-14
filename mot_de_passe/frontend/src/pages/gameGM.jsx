@@ -9,7 +9,9 @@ const GameGM = () => {
     const [round, setRound] = useState(1);
     const [teamScore, setTeamScore] = useState(0);
     const [currentWordIndex, setCurrentWordIndex] = useState(0);
-    const [currentPlayerNumber, setCurrentplayerNumbers] = useState(2)
+    const [currentPlayerNumber, setCurrentPlayerNumbers] = useState(2)
+    const [currentPlayerWordList, setCurrentPlayerWordList] = useState(1)
+    const [clicCounter, setClicCounter] = useState(0)
     const numWordsPerRound = 6;
     const numWordsPerRound_2 = 12;
 
@@ -74,97 +76,113 @@ const GameGM = () => {
 
 
     useEffect(() => {
-       
         if (gameData) {
             setCurrentWordIndex(gameData[0].currentWordIndex);
             setTeamScore(gameData[0].points)
-            setCurrentplayerNumbers(gameData[0].currentPlayerNumber)
-
+            setCurrentPlayerNumbers(gameData[0].currentPlayerNumber)
+            setCurrentPlayerWordList(gameData[0].currentPlayerWordList)
+            setClicCounter(gameData[0].currentAttempt)
         }
-    }, [currentPlayerNumber, gameData]);
+    }, [clicCounter, currentPlayerNumber, currentPlayerWordList, gameData]);
 
 
 
     const handleValiderMot = async () => {
-        const updatedGameData = [...gameData]; 
+        const updatedGameData = [...gameData];
         const currentPlayer = updatedGameData[0].players[currentPlayerNumber];
-        const reponseSend = updatedGameData[0].currentAttempt 
+        const currentPlayerWordlist = updatedGameData[0].currentPlayerWordList;
+        const reponseSend = updatedGameData[0].currentAttempt
         const currentWord = currentPlayer.wordlist[currentWordIndex];
 
 
-        if (currentWordIndex === currentPlayer.wordlist.length - 1 && updatedGameData[0].currentPlayerNumber === 1) {
+        if (currentWordIndex === currentPlayer.wordlist.length - 1 && updatedGameData[0].currentPlayerWordList === 1) {
             // Switch to the second player's wordlist
-            console.log('la');
             setRound(2)
-            setCurrentplayerNumbers(2)
-            setCurrentWordIndex(0)
+            setCurrentPlayerNumbers(1)
+            setCurrentPlayerWordList(2)
+
+            setCurrentWordIndex(0);
             setTeamScore((prevScore) => prevScore + 1);
             currentWord.status = 1;
             updatedGameData[0].currentWordIndex = 0
-            updatedGameData[0].currentPlayerNumber = 0
-            updatedGameData[0].round = 2
+            updatedGameData[0].currentPlayerNumber = 1
+            updatedGameData[0].currentPlayerWordList = currentPlayerWordlist + 1
+            updatedGameData[0].rounds = 2
             updatedGameData[0].currentAttempt = reponseSend + 1
             updatedGameData[0].points = teamScore + 1
             await axios.post("/team/update", { gameData: updatedGameData });
-            // console.log(updatedGameData);
-          
             const response = await axios.get("/team/dataGame");
             setGameData(response.data)
             chronoRef.current.reset();
-    
-        }else {
+            console.log('la');
+            // window.location.reload();
+        } else {
             console.log('laup');
-            currentWord.status = 1;
-            updatedGameData[0].currentAttempt = reponseSend + 1
+
             setTeamScore((prevScore) => prevScore + 1);
             setCurrentWordIndex((prevScore) => prevScore + 1)
+            currentWord.status = 1;
+            updatedGameData[0].currentAttempt = reponseSend + 1
             updatedGameData[0].points = teamScore + 1
             updatedGameData[0].currentWordIndex = currentWordIndex + 1
-
             // Make the API call to update the backend with the updated data
             await axios.post("/team/update", { gameData: updatedGameData });
+            const response = await axios.get("/team/dataGame");
+            setGameData(response.data)
+            chronoRef.current.reset();
+
         }
-        if (reponseSend === 12){
-        alert('fin du game')
-        }else{
-        updatedGameData[0].currentAttempt = reponseSend + 1
-        updatedGameData[0].points = teamScore + 1
-        const response = await axios.get("/team/dataGame");
-        setGameData(response.data)
-        chronoRef.current.reset();
+        if (reponseSend === numWordsPerRound_2 + 1) {
+            alert('fin du game')
         }
+        // else {
+        // console.log('lop');
+        //     setTeamScore((prevScore) => prevScore + 1);
+        //     setCurrentWordIndex((prevScore) => prevScore + 1)
+        //     currentWord.status = 1;
+        //     updatedGameData[0].currentAttempt = reponseSend + 1
+        //     updatedGameData[0].points = teamScore + 1
+        //     const response = await axios.get("/team/dataGame");
+        //     setGameData(response.data)
+        //     chronoRef.current.reset();
+        // }
     };
 
     const handleRefuserMot = async () => {
-        const updatedGameData = [...gameData]; // Create a copy of the gameData array
+        const updatedGameData = [...gameData];
+        const currentPlayerWordlist = updatedGameData[0].currentPlayerWordList;
         const currentPlayer = updatedGameData[0].players[currentPlayerNumber];
+        const reponseSend = updatedGameData[0].currentAttempt
         const currentWord = currentPlayer.wordlist[currentWordIndex];
-        const reponseSend = updatedGameData[0].currentAttempt 
-        if (currentWordIndex === currentPlayer.wordlist.length - 1 && updatedGameData[0].currentPlayerNumber === 1) {
+
+        if (currentWordIndex === currentPlayer.wordlist.length - 1 && updatedGameData[0].currentPlayerWordList === 1) {
             // Switch to the second player's wordlist
             setRound(2)
-            setCurrentplayerNumbers(2)
-            setCurrentWordIndex(0)
+            setCurrentPlayerNumbers(1)
+            setCurrentPlayerWordList(2)
+            setCurrentWordIndex(0);
             currentWord.status = 2;
             updatedGameData[0].currentAttempt = reponseSend + 1
             updatedGameData[0].currentWordIndex = 0
-            updatedGameData[0].currentPlayerNumber = 0
+            updatedGameData[0].currentPlayerWordList = currentPlayerWordlist + 1
+            updatedGameData[0].currentPlayerWordList = 2
             updatedGameData[0].round = 2
             await axios.post("/team/update", { gameData: updatedGameData });
-
             const response = await axios.get("/team/dataGame");
             setGameData(response.data)
             chronoRef.current.reset();
-            
-        }  else {
+            console.log('la');
+        } else {
             console.log('laup');
             updatedGameData[0].currentAttempt = reponseSend + 1
             currentWord.status = 2;
             setCurrentWordIndex((prevScore) => prevScore + 1)
             updatedGameData[0].currentWordIndex = currentWordIndex + 1
             await axios.post("/team/update", { gameData: updatedGameData });
+            const response = await axios.get("/team/dataGame");
+            setGameData(response.data)
         }
-        if (reponseSend === 12) {
+        if (reponseSend === numWordsPerRound_2 + 1) {
             alert('fin du game')
         } else {
             updatedGameData[0].currentAttempt = reponseSend + 1
@@ -198,10 +216,10 @@ const GameGM = () => {
                     </div>
                     <div className='GM-btn-word'>
                         <div>
-                            <button className='GM-btn-word-btn-valide' onClick={handleValiderMot}>Valider mot</button>
+                            <button className='GM-btn-word-btn-valide' onClick={handleValiderMot} disabled={clicCounter === numWordsPerRound_2 + 1}>Valider mot</button>
                         </div>
                         <div>
-                            <button className='GM-btn-word-btn-refuse' onClick={handleRefuserMot}>Refuser mot</button>
+                            <button className='GM-btn-word-btn-refuse' onClick={handleRefuserMot} disabled={clicCounter === numWordsPerRound_2 + 1}>Refuser mot</button>
                         </div>
                     </div>
                 </div>
@@ -214,15 +232,19 @@ const GameGM = () => {
                                 <ul>
                                     {player.wordlist.map((wordObj, index) => (
                                         <li
-                                            className={`GM-li-player ${currentPlayerNumber === player.playerNumber && currentWordIndex === index
-                                                    ? 'current-word'
-                                                    : (round === 2 && currentPlayerNumber === 1 && index < currentWordIndex)
-                                                        ? 'current-word'
-                                                        : wordObj.status === '1'
-                                                            ? 'valider'
-                                                            : wordObj.status === '2'
-                                                                ? 'refuser'
-                                                                : ''
+                                            className={`GM-li-player ${player.playerNumber === currentPlayerWordList && currentWordIndex === index
+                                                ? 'current-word'
+                                                : wordObj.status === '1'
+                                                    ? 'valider'
+                                                    : wordObj.status === '2'
+                                                        ? 'refuser'
+                                                        : (round === 2 && player.playerNumber === currentPlayerWordList && index < currentWordIndex)
+                                                            ? 'current-word'
+                                                            : wordObj.status === '1'
+                                                                ? 'valider'
+                                                                : wordObj.status === '2'
+                                                                    ? 'refuser'
+                                                                    : ''
                                                 }`}
                                             key={wordObj._id}
                                         >

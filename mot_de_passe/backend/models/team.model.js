@@ -50,6 +50,10 @@ const teamSchema = mongoose.Schema(
         }, 
         currentPlayerNumber: {
             type: Number,
+            default: 0
+        },
+        currentPlayerWordList :{
+            type: Number,
             default: 1
         },
         currentWordIndex: {

@@ -1,8 +1,11 @@
 import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'react';
+import { io } from 'socket.io-client';
 
 const ChronoGM = ({ initialTime, onTimeout }, ref) => {
     const [countdown, setCountdown] = useState(initialTime);
     const [isRunning, setIsRunning] = useState(false);
+    const socket = io(`http://localhost:4000`)
+
 
     useEffect(() => {
         let timer;
@@ -33,13 +36,25 @@ const ChronoGM = ({ initialTime, onTimeout }, ref) => {
     }));
 
     const handleStart = () => {
+        socket.emit('startChrono');
         setIsRunning(true);
     };
 
     const handlePause = () => {
         setIsRunning(false);
+        socket.emit('chronoTimeout');
     };
+    
+    useEffect(() => {
+        socket.on('startChrono', () => {
+            setIsRunning(true);
+        });
 
+        return () => {
+            socket.off('startChrono');
+        };
+    }, []);
+    
     return (
         <div className='Chrono-GM'>
             <div >
