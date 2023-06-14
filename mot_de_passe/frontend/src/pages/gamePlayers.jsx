@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState} from 'react';
 import axios from '../axiosConfig.js';
 import { io } from 'socket.io-client';
 
@@ -7,7 +7,6 @@ const GamePlayers = () => {
     const [round, setRound] = useState(1);
     const [teamScore, setTeamScore] = useState(0);
     const [countdown, setCountdown] = useState(30);
-    const socket = io(`http://localhost:4000`);
 
     useEffect(() => {
         const socket = io(`http://localhost:4000`);
@@ -42,6 +41,7 @@ const GamePlayers = () => {
     useEffect(() => {
         if (gameData) {
             setTeamScore(gameData[0].points);
+            setRound(gameData[0].rounds)
         }
     }, [gameData]);
 
@@ -66,20 +66,20 @@ const GamePlayers = () => {
                     <h2>
                         Manche <span>{round}</span>
                     </h2>
-                    <div className="GM-TeamScore-main">
-                        <div className="GM-TeamScore">
+                    <div className="GP-TeamScore-main">
+                        <div className="GP-TeamScore">
                             <p>L'équipe a marqué : <span>{teamScore}</span></p>
                         </div>
                     </div>
-                    <div className="GM-player-main">
+                    <div className="GP-player-main">
                         {gameData &&
                             gameData[0].players.map((player) => (
-                                <div className="GM-player-wrapper" key={player.playerId}>
+                                <div className="GP-player-wrapper" key={player.playerId}>
                                     <h3>{player.playerPseudo}</h3>
                                     <ul>
                                         {player.wordlist.map((wordObj, index) => (
                                             <li
-                                                className={`GM-li-player ${wordObj.status === '1' ? 'valider' : wordObj.status === '2' ? 'refuser' : ''
+                                                className={`GP-li-player ${wordObj.status === '1' ? 'valider' : wordObj.status === '2' ? 'refuser' : wordObj.status === '3' ? 'current-word' : ''
                                                     }`}
                                                 key={wordObj._id}
                                             >

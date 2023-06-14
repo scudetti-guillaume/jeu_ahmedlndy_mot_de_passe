@@ -26,7 +26,7 @@ const teamSchema = mongoose.Schema(
                             },
                             status: {
                                 type: String,
-                                enum: [0, 1, 2],
+                                enum: [0, 1, 2,3],
                                 default: 0
                             }
                         }
