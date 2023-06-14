@@ -1,13 +1,14 @@
-import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'react';
+import React, { useEffect, useState, useImperativeHandle, forwardRef, useRef } from 'react';
 import { io } from 'socket.io-client';
+import axios from '../axiosConfig.js';
 
 const ChronoGM = ({ initialTime, onTimeout }, ref) => {
     const [countdown, setCountdown] = useState(initialTime);
     const [isRunning, setIsRunning] = useState(false);
-    const socket = io(`http://localhost:4000`)
+    const socketRef = useRef(null);
 
 
-    useEffect(() => {
+    useEffect(()  => {
         let timer;
 
         if (isRunning) {
@@ -20,13 +21,18 @@ const ChronoGM = ({ initialTime, onTimeout }, ref) => {
                     }
                     return prevCountdown - 1;
                 });
+             
             }, 1000);
+            
+            
         }
-
+        axios.post("/team/chrono", { chrono: countdown });
+       
         return () => {
+         
             clearInterval(timer);
         };
-    }, [isRunning, onTimeout]);
+    }, [countdown, isRunning, onTimeout]);
 
     useImperativeHandle(ref, () => ({
         reset() {
@@ -36,24 +42,52 @@ const ChronoGM = ({ initialTime, onTimeout }, ref) => {
     }));
 
     const handleStart = () => {
-        socket.emit('startChrono');
+        // const socket = io(`http://localhost:4000`)
+        // socket.emit('countdown', countdown);
+        // console.log(countdown);
         setIsRunning(true);
     };
 
     const handlePause = () => {
+        // const socket = io(`http://localhost:4000`)
+        // socket.emit('countdown', countdown);
+        // console.log(countdown);
         setIsRunning(false);
-        socket.emit('chronoTimeout');
+      
     };
     
-    useEffect(() => {
-        socket.on('startChrono', () => {
-            setIsRunning(true);
-        });
+    // useEffect(() => {
+    //     const socket = io(`http://localhost:4000`) // Initialisation du socket
 
-        return () => {
-            socket.off('startChrono');
-        };
-    }, []);
+    //     return () => {
+    //         socket.disconnect(); // Déconnexion du socket lors du démontage du composant
+    //     };
+    // }, []);
+    
+    // useEffect(() => {
+    //     const socket = io(`http://localhost:4000`)
+    //     let timer;
+    //     socket.emit('countdown', countdown);
+    //     console.log(countdown);
+    //     if (isRunning) {
+    //         timer = setInterval(() => {
+    //             setCountdown(prevCountdown => {
+    //                 if (prevCountdown === 1) {
+    //                     clearInterval(timer);
+    //                     setIsRunning(false);
+    //                     onTimeout();
+    //                 }
+    //                 return prevCountdown - 1;
+    //             });
+    //         }, 1000);
+    //     }
+
+    //     // socketRef.current.emit('countdown', countdown); // Ajout de cette ligne
+
+    //     return () => {
+    //         clearInterval(timer);
+    //     };
+    // }, [isRunning, onTimeout, countdown]);
     
     return (
         <div className='Chrono-GM'>

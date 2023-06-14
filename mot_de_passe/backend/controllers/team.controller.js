@@ -155,11 +155,29 @@ console.log(req.body);
         const newGameData = req.body.gameData;
 
         // Insérer les nouvelles données dans la collection
-        await TeamModel.insertMany(newGameData);
-
+        await TeamModel.insertMany(newGameData).then((doc)=>{
+            req.app.get("io").emit("update", doc);
+        
+        })
         res.status(200).json({ message: "Mise à jour effectuée avec succès." });
+        
     } catch (error) {
         res.status(400).json({ message: "Une erreur s'est produite lors de la mise à jour des données.", error });
+    }
+
+}
+
+exports.chrono = async (req, res) => {
+console.log(req.body.chrono);
+    const chrono = req.body.chrono;
+    try {
+        await TeamModel.updateOne({chrono});
+        console.log(chrono);
+        res.status(200).json(chrono)
+        req.app.get("io").emit("chrono", chrono);
+    } catch (err) {
+        res.status(400).json(err)
+        // 
     }
 
 }

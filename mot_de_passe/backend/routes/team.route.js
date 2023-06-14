@@ -38,15 +38,16 @@ router.patch("/regenwords", (req, res) => {
     team.regenList(req, res);
 });
 
-// router.get("/getWords", (req, res) => {
-//     // req.app.get("io").emit("startgame", res.body);
-//     team.getWordList(req, res);
-// });
-
 router.post("/update", (req, res) => {
     // req.app.get("io").emit("startgame", res.body);
     team.update(req, res);
 });
+
+router.post("/chrono", (req, res) => {
+    // req.app.get("io").emit("startgame", res.body);
+    team.chrono(req, res);
+});
+
 
 module.exports = router;
 

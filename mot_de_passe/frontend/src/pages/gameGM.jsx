@@ -9,8 +9,8 @@ const GameGM = () => {
     const [round, setRound] = useState(1);
     const [teamScore, setTeamScore] = useState(0);
     const [currentWordIndex, setCurrentWordIndex] = useState(0);
-    const [currentPlayerNumber, setCurrentPlayerNumbers] = useState(2)
-    const [currentPlayerWordList, setCurrentPlayerWordList] = useState(1)
+    const [currentPlayerNumber, setCurrentPlayerNumbers] = useState(0)
+    const [currentPlayerWordList, setCurrentPlayerWordList] = useState(0)
     const [clicCounter, setClicCounter] = useState(0)
     const numWordsPerRound = 6;
     const numWordsPerRound_2 = 12;
@@ -90,20 +90,21 @@ const GameGM = () => {
     const handleValiderMot = async () => {
         const updatedGameData = [...gameData];
         const currentPlayer = updatedGameData[0].players[currentPlayerNumber];
-        const currentPlayerWordlist = updatedGameData[0].currentPlayerWordList;
+        const currentPlayerWordlist = updatedGameData[0].currentPlayerWordList
         const reponseSend = updatedGameData[0].currentAttempt
         const currentWord = currentPlayer.wordlist[currentWordIndex];
 
 
         if (currentWordIndex === currentPlayer.wordlist.length - 1 && updatedGameData[0].currentPlayerWordList === 1) {
             // Switch to the second player's wordlist
+            console.log('la');
             setRound(2)
             setCurrentPlayerNumbers(1)
-            setCurrentPlayerWordList(2)
-
+            setCurrentPlayerWordList(1)
             setCurrentWordIndex(0);
             setTeamScore((prevScore) => prevScore + 1);
             currentWord.status = 1;
+            console.log(currentWord);
             updatedGameData[0].currentWordIndex = 0
             updatedGameData[0].currentPlayerNumber = 1
             updatedGameData[0].currentPlayerWordList = currentPlayerWordlist + 1
@@ -114,11 +115,11 @@ const GameGM = () => {
             const response = await axios.get("/team/dataGame");
             setGameData(response.data)
             chronoRef.current.reset();
-            console.log('la');
+          
             // window.location.reload();
         } else {
             console.log('laup');
-
+            console.log(currentWord);
             setTeamScore((prevScore) => prevScore + 1);
             setCurrentWordIndex((prevScore) => prevScore + 1)
             currentWord.status = 1;
@@ -184,7 +185,8 @@ const GameGM = () => {
         }
         if (reponseSend === numWordsPerRound_2 + 1) {
             alert('fin du game')
-        } else {
+        } 
+        else {
             updatedGameData[0].currentAttempt = reponseSend + 1
             const response = await axios.get("/team/dataGame");
             setGameData(response.data)
@@ -192,7 +194,7 @@ const GameGM = () => {
         }
     };
 
-
+   
     const handleTimeout = () => {
         // Logique à exécuter lorsque le chrono atteint 0
         // ...
@@ -227,7 +229,7 @@ const GameGM = () => {
                 <div className='GM-player-main'>
                     {gameData &&
                         gameData[0].players.map((player) => (
-                            <div className='GM-player-wrapper' key={player.playerId}>
+                            <div className='GM-player-wrapper' key={player.playerNumber}>
                                 <h3>{player.playerPseudo}</h3>
                                 <ul>
                                     {player.wordlist.map((wordObj, index) => (

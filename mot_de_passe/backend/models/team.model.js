@@ -47,12 +47,12 @@ const teamSchema = mongoose.Schema(
         currentWord: {
             type: String,
             default: null
-        }, 
+        },
         currentPlayerNumber: {
             type: Number,
             default: 0
         },
-        currentPlayerWordList :{
+        currentPlayerWordList: {
             type: Number,
             default: 1
         },
@@ -60,9 +60,13 @@ const teamSchema = mongoose.Schema(
             type: Number,
             default: 0
         },
-        currentAttempt : {
+        currentAttempt: {
             type: Number,
             default: 1
+        },
+        chrono: {
+            type: Number,
+            default: 30
         }
 
     },

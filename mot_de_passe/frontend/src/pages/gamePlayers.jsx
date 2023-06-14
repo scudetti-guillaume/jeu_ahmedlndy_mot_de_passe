@@ -1,46 +1,53 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import axios from '../axiosConfig.js';
+import { io } from 'socket.io-client';
 
 const GamePlayers = () => {
+    const [gameData, setGameData] = useState(null);
     const [round, setRound] = useState(1);
     const [teamScore, setTeamScore] = useState(0);
     const [countdown, setCountdown] = useState(30);
-    const [playerDirection, setPlayerDirection] = useState(1);
-    const [words, setWords] = useState([]);
-
-    const numWordsPerRound = 12;
-    const numRounds = 2;
-
-    const getFrenchWords = async (numWords, usedWords) => {
-        try {
-            const response = await fetch(`https://api.datamuse.com/words?ml=fr&max=1000`);
-            const data = await response.json();
-            const frenchWords = data
-                .filter(word => word.tags && !word.tags.includes("conj"))
-                .filter(word => word.word.match(/^[a-zA-ZÀ-ÿ]{6,}$/)) // Filter words to keep only French alphabetical characters with a minimum length of 6
-                .map(word => word.word.toLowerCase()); // Convert all words to lowercase
-
-            const newWords = frenchWords.filter(word => !usedWords.includes(word));
-            console.log(newWords);
-            
-            return newWords.slice(0, numWords);
-        } catch (error) {
-            console.log(error);
-            return [];
-        }
-    };
-
-    const startRound = async () => {
-        const newWords = await getFrenchWords(numWordsPerRound, words);
-        setWords(newWords);
-    };
+    const socket = io(`http://localhost:4000`);
 
     useEffect(() => {
-        startRound();
+        const socket = io(`http://localhost:4000`);
+
+        const getDataGame = async () => {
+            try {
+                const response = await axios.get("/team/dataGame");
+                console.log(response.data);
+                setGameData(response.data);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        getDataGame();
+
+        socket.on('chrono', (countdown) => {
+            console.log(countdown);
+            setCountdown(countdown);
+        });
+
+        socket.on('update', (gameData) => {
+            console.log(gameData);
+            setGameData(gameData);
+        });
+
+        return () => {
+            socket.disconnect();
+        };
     }, []);
 
+    useEffect(() => {
+        if (gameData) {
+            setTeamScore(gameData[0].points);
+        }
+    }, [gameData]);
+
+
     return (
-        <div className='GP-main'>
+        <div className="GP-main">
             <div>
                 <h1>hamed mot de passe</h1>
             </div>
@@ -55,29 +62,34 @@ const GamePlayers = () => {
                     <p>Chrono</p>
                     <span>{countdown} secondes</span>
                 </div>
-                <div className={playerDirection === 1 ? '1' : '2'}>
-                    <div>
-                        Pseudo : Vous devez faire deviner les mots
+                <div>
+                    <h2>
+                        Manche <span>{round}</span>
+                    </h2>
+                    <div className="GM-TeamScore-main">
+                        <div className="GM-TeamScore">
+                            <p>L'équipe a marqué : <span>{teamScore}</span></p>
+                        </div>
                     </div>
-                    <div>
-                        <h3>Le pseudo</h3>
+                    <div className="GM-player-main">
+                        {gameData &&
+                            gameData[0].players.map((player) => (
+                                <div className="GM-player-wrapper" key={player.playerId}>
+                                    <h3>{player.playerPseudo}</h3>
+                                    <ul>
+                                        {player.wordlist.map((wordObj, index) => (
+                                            <li
+                                                className={`GM-li-player ${wordObj.status === '1' ? 'valider' : wordObj.status === '2' ? 'refuser' : ''
+                                                    }`}
+                                                key={wordObj._id}
+                                            >
+                                                {wordObj.word}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
                     </div>
-                    <ul>
-                        {words.map((word, index) => (
-                            <li key={index}>{word}</li>
-                        ))}
-                    </ul>
-                </div>
-                <div className={playerDirection === 1 ? '2' : '1'}>
-                    <div>
-                        Pseudo : Vous devez deviner les mots
-                    </div>
-                    <div>
-                        <h3>Le pseudo</h3>
-                    </div>
-                    <ul>
-                        <li></li>
-                    </ul>
                 </div>
             </div>
         </div>
