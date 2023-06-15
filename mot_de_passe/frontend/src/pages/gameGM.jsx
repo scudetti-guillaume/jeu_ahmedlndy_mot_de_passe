@@ -96,10 +96,6 @@ const GameGM = () => {
         const nextWord = currentPlayer.wordlist[currentWordIndex + 1]
 
         if (currentWordIndex === currentPlayer.wordlist.length - 1 && updatedGameData[0].currentPlayerWordList === 1) {
-            // Switch to the second player's wordlist
-            console.log('la');
-           
-           
             setRound(2)
             setCurrentPlayerNumbers(1)
             setCurrentPlayerWordList(1)
@@ -152,7 +148,8 @@ const GameGM = () => {
             const response = await axios.get("/team/dataGame");
             setGameData(response.data)
             chronoRef.current.reset();
-            }
+         }
+
         }
         if (reponseSend === numWordsPerRound_2 + 1) {
             alert('fin du game')
@@ -172,52 +169,71 @@ const GameGM = () => {
 
     const handleRefuserMot = async () => {
         const updatedGameData = [...gameData];
-        const currentPlayerWordlist = updatedGameData[0].currentPlayerWordList;
         const currentPlayer = updatedGameData[0].players[currentPlayerNumber];
+        const currentPlayerWordlist = updatedGameData[0].currentPlayerWordList
         const reponseSend = updatedGameData[0].currentAttempt
         const currentWord = currentPlayer.wordlist[currentWordIndex];
         const nextWord = currentPlayer.wordlist[currentWordIndex + 1]
 
         if (currentWordIndex === currentPlayer.wordlist.length - 1 && updatedGameData[0].currentPlayerWordList === 1) {
-            // Switch to the second player's wordlist
             setRound(2)
             setCurrentPlayerNumbers(1)
-            setCurrentPlayerWordList(2)
+            setCurrentPlayerWordList(1)
             setCurrentWordIndex(0);
+            setTeamScore((prevScore) => prevScore + 1);
+            const nextWord = updatedGameData[0].players[1].wordlist[0]
             currentWord.status = 2;
             console.log(nextWord);
-            updatedGameData[0].currentWord = currentWord.word
-            updatedGameData[0].currentAttempt = reponseSend + 1
+            updatedGameData[0].currentWord = nextWord.word
+            nextWord.status = 3
             updatedGameData[0].currentWordIndex = 0
+            updatedGameData[0].currentPlayerNumber = 1
             updatedGameData[0].currentPlayerWordList = currentPlayerWordlist + 1
-            updatedGameData[0].currentPlayerWordList = 2
-            updatedGameData[0].round = 2
+            updatedGameData[0].rounds = 2
+            updatedGameData[0].currentAttempt = reponseSend + 1
+            updatedGameData[0].points = teamScore + 1
             await axios.post("/team/update", { gameData: updatedGameData });
             const response = await axios.get("/team/dataGame");
             setGameData(response.data)
             chronoRef.current.reset();
-            console.log('la');
+
+            // window.location.reload();
         } else {
-            console.log('laup');
-            console.log(nextWord);
-            updatedGameData[0].currentWord = currentWord.word
-            updatedGameData[0].currentAttempt = reponseSend + 1
-            currentWord.status = 2;
-            setCurrentWordIndex((prevScore) => prevScore + 1)
-            updatedGameData[0].currentWordIndex = currentWordIndex + 1
-            await axios.post("/team/update", { gameData: updatedGameData });
-            const response = await axios.get("/team/dataGame");
-            setGameData(response.data)
+            if (currentWordIndex === currentPlayer.wordlist.length - 1 && updatedGameData[0].currentPlayerWordList === 2) {
+                console.log('laupuoi');
+                setTeamScore((prevScore) => prevScore + 1);
+                setCurrentWordIndex((prevScore) => prevScore + 1)
+                currentWord.status = 2;
+                updatedGameData[0].currentAttempt = reponseSend + 1
+                updatedGameData[0].points = teamScore + 1
+                updatedGameData[0].currentWordIndex = currentWordIndex + 1
+                // Make the API call to update the backend with the updated data
+                await axios.post("/team/update", { gameData: updatedGameData });
+                const response = await axios.get("/team/dataGame");
+                setGameData(response.data)
+                chronoRef.current.reset();
+            } else {
+                console.log('laup');
+                console.log(nextWord);
+                setTeamScore((prevScore) => prevScore + 1);
+                setCurrentWordIndex((prevScore) => prevScore + 1)
+                currentWord.status = 2;
+                nextWord.status = 3
+                updatedGameData[0].currentWord = nextWord
+                updatedGameData[0].currentAttempt = reponseSend + 1
+                updatedGameData[0].points = teamScore + 1
+                updatedGameData[0].currentWordIndex = currentWordIndex + 1
+                // Make the API call to update the backend with the updated data
+                await axios.post("/team/update", { gameData: updatedGameData });
+                const response = await axios.get("/team/dataGame");
+                setGameData(response.data)
+                chronoRef.current.reset();
+            }
+
         }
         if (reponseSend === numWordsPerRound_2 + 1) {
             alert('fin du game')
-        } 
-        // else {
-        //     updatedGameData[0].currentAttempt = reponseSend + 1
-        //     const response = await axios.get("/team/dataGame");
-        //     setGameData(response.data)
-        //     chronoRef.current.reset();
-        // }
+        }
     };
 
    

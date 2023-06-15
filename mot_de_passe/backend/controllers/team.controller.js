@@ -36,17 +36,16 @@ exports.removePlayer = async (req, res, next) => {
 
 exports.getTeam = async (req, res) => {
     try {
-        const PlayerListTrue = await PlayerModel.find({ selected: true });
-        res.status(200).json(PlayerListTrue)
-
+        const playerList = await PlayerModel.find({ selected: true })
+        res.status(200).json(playerList);
     } catch (err) {
-        res.status(400).json(err)
-        // 
+        res.status(400).json(err);
     }
-}
+};
 
 exports.startGame = async (req, res) => {
-    const PlayerListTrue = await PlayerModel.find({ selected: true });
+    const PlayerListTrue = await PlayerModel.find({ selected: true }).sort({ Number: 1 }).exec();
+    
     // console.log(PlayerListTrue);
     const teamStart = []
     teamStart.push(PlayerListTrue)
