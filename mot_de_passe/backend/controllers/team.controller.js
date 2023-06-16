@@ -63,8 +63,9 @@ exports.startGame = async (req, res) => {
                     team.save()
                 })
         });
-        await res.status(200).json(teamStart)
         await req.app.get("io").emit("startGame", teamStart);
+        await res.status(200).json(teamStart)
+       
     } catch (error) {
         res.status(500).json('erreur de chargement de team');
     }
@@ -102,7 +103,6 @@ exports.wordList = async (req, res) => {
             res.status(400).json(err);
         }
     } else {
-        console.log('la');
         res.status(200).json({ list_1, list_2 });
     }
 }
@@ -111,6 +111,7 @@ exports.getData = async (req,res) => {
     try {
         const PlayerList = await TeamModel.find({});
         console.log(PlayerList);
+        await req.app.get("io").emit("startGame", PlayerList);
         res.status(200).json(PlayerList)
 
     } catch (err) {

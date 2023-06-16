@@ -5,7 +5,7 @@ import LoginPlayers from './pages/loginPlayers';
 import LoginGameMaster from './pages/loginGameMaster';
 import RegisterGameMaster from './pages/signupGameMaster';
 import Waitingroom from './pages/waitingroom';
-import GamePlayer from './pages/gamePlayers';
+import GamePlayer from './pages/gamePlayersSpeaker';
 import GameGM from './pages/gameGM';
 import GameViewers from './pages/gameViewers';
 
