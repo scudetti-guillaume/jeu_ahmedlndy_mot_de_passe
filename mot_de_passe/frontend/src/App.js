@@ -5,9 +5,10 @@ import LoginPlayers from './pages/loginPlayers';
 import LoginGameMaster from './pages/loginGameMaster';
 import RegisterGameMaster from './pages/signupGameMaster';
 import Waitingroom from './pages/waitingroom';
-import GamePlayer from './pages/gamePlayersSpeaker';
+import GamePlayer from './pages/gamePlayers';
 import GameGM from './pages/gameGM';
 import GameViewers from './pages/gameViewers';
+import SummaryGame from './pages/summaryGame';
 
 
 function App() {
@@ -24,6 +25,8 @@ function App() {
           <Route path="/gamePlayer" element={<GamePlayer />} />
           <Route path="/gameGM" element={<GameGM />} />
           <Route path="/gameViewers" element={<GameViewers />} />
+          <Route path="/recap" element={<SummaryGame />} />
+        
         </Routes>
       </BrowserRouter>
     </>

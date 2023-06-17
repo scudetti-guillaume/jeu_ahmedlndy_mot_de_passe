@@ -9,6 +9,7 @@ const path = require("path");
 const gameMasterRoutes = require("./routes/gameMaster.route");
 const playerRoutes = require("./routes/players.route");
 const  router  = require("./routes/team.route");
+const  game  = require("./routes/summaryGame.route");
 require("dotenv").config({ path: "../.env" });
 
 
@@ -48,36 +49,14 @@ mongoose
 app.use("/player", playerRoutes);
 app.use("/gamemaster", gameMasterRoutes);
 app.use("/team", router);
-// app.use("/game", game);
+app.use("/endgame", game);
 app.set("io", io);
-
-
-
-io.on("connection", (socket) => {
-    console.log("New client connected");
-
-    socket.on("team/*", (data) => {
-        const eventName = data.eventName;
-        const eventData = data.eventData;
-
-        console.log("Received event:", eventName, eventData);
-        // Effectuer des opérations en fonction de l'événement reçu
-
-        // Envoyer une réponse au client
-        socket.emit("responseEvent", { message: "Response message" });
-    });
-
-    socket.on("disconnect", () => {
-        console.log("Client disconnected");
-        // Effectuer des opérations de nettoyage ou de gestion de la déconnexion
-    });
-});
 
 
  server.listen(process.env.PORT, () =>
     console.log(`listening on port ${process.env.PORT}`)
 );
 
-// io.attach(server);
+
 
 

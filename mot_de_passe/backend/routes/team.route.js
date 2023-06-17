@@ -48,6 +48,10 @@ router.post("/chrono", (req, res) => {
     team.chrono(req, res);
 });
 
+router.patch("/reset", (req, res) => {
+    // req.app.get("io").emit("startgame", res.body);
+    team.reset(req, res);
+});
 
 module.exports = router;
 

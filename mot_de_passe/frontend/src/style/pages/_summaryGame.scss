@@ -1,6 +1,8 @@
 @import "../_settings.scss";
 
-.GV-main {
+@import "../_settings.scss";
+
+.SG-main {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -9,36 +11,7 @@
 
 }
 
-.GV-round {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-bottom: 2%;
-
-}
-
-.GV-chrono {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    border: solid 1px rgb(12, 224, 12);
-    padding: 2%;
-    border-radius: 10px;
-}
-
-.GV-chrono-coutndown {
-    font-size: x-large;
-    font-style: oblique;
-}
-
-.GV-teamScore {
-    font-size: x-large;
-    font-style: oblique;
-
-}
-
-.GV-TeamScore-main {
+.SG-TeamScore-main {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -49,7 +22,25 @@
 }
 
 
-.GV-player-main {
+.SG-btn-word {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row;
+
+}
+
+.SG-btn-word-btn-valide {
+    color: black;
+    background: green;
+}
+
+.SG-btn-word-btn-refuse {
+    background: rgb(128, 9, 0);
+    color: black;
+}
+
+.SG-player-main {
     display: flex;
     flex-direction: row;
     width: 50vh;
@@ -60,38 +51,26 @@
     border-radius: 10px;
 }
 
-
-.GV-player-wrapper {
+.SG-ul-player {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
 
-.GV-player-pseudo{
-display: flex;
-padding-bottom: 2%;
-font-weight: bold;
-
-}
-
-.GV-ul-player {
+.SG-player-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 100%;
 }
 
-.GV-li-player {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+
+.SG-li-player {
     padding: 5px;
     margin-bottom: 5px;
     border: 1px solid transparent;
     list-style-type: none;
-    width: 100%;
 }
 
 .current-word {
@@ -101,15 +80,9 @@ font-weight: bold;
 .valider {
     color: #fff;
     background-color: green;
-
 }
 
 .refuser {
     color: #fff;
     background-color: red;
-}
-
-.GV-span-player {
-    font-size: large;
-    font-style: oblique;
 }

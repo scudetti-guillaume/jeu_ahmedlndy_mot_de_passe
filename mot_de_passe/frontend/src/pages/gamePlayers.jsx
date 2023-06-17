@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../axiosConfig.js';
+import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
 const GamePlayers = () => {
+    const socket = io(`http://localhost:4000`);
+    const navigate = useNavigate();
     const [gameData, setGameData] = useState(null);
     const [round, setRound] = useState(1);
     const [teamScore, setTeamScore] = useState(0);
@@ -29,7 +32,7 @@ const GamePlayers = () => {
         };
       
         
-        const socket = io(`http://localhost:4000`);
+      
         socket.on('startGame', (gameData) => {
             setGameData(gameData);
             setTeamScore(gameData.points);
@@ -53,11 +56,21 @@ const GamePlayers = () => {
             setCountdown(countdown);
         });
         getDataGame();
+        
+        socket.on('endgame', () => {
+            navigate('/recap');
+            });
+            
+            
+        socket.on('reset', () => {
+            navigate('/waitingroom');
+        });
+        
         return () => {
             socket.disconnect();
         };
         
-    }, []);
+    }, [navigate, socket]);
 
     useEffect(() => {
         setGameData(gameData);
@@ -78,48 +91,49 @@ const GamePlayers = () => {
                 <h1>hamed mot de passe</h1>
             </div>
             <div>
-                <h2>
+                <h2 className="GP-round">
                     Manche <span>{round}</span>
                 </h2>
-                <div>
-                    <p>Votre équipe a marqué : <span>{teamScore}</span></p>
-                </div>
-                <div>
-                    <p>Chrono</p>
-                    <span>{countdown} secondes</span>
-                </div>
+                
                 <div>
                     <div className="GP-TeamScore-main">
                         <div className="GP-TeamScore">
-                            <p>L'équipe a marqué : <span>{teamScore}</span></p>
+                            <p>Votre équipe à un score de : <span className="GP-teamScore">{teamScore}</span></p>
                         </div>
+                    </div>
+                    <div className="GP-chrono">
+                        <p>Chrono : </p>
+                        <span className="GP-chrono-coutndown">{countdown} secondes</span>
                     </div>
                     <div className="GP-player-main">
                         {gameData &&
                             gameData[0].players.map((player) => (
                                 <div className="GP-player-wrapper" key={player.playerId}>
-                                    <ul>
-                                        <h3>{player.playerPseudo}</h3>
-
                                         {player.playerNumber === currentPlayer && player.playerId === playerId && (
                                             <React.Fragment>
+                                            <h3>{player.playerPseudo}</h3>
+                                            <ul>
                                                 {player.wordlist.map((wordObj, index) => (
+
                                                     <li
                                                         className={`GP-li-player ${wordObj.status === '1' ? 'valider' : wordObj.status === '2' ? 'refuser' : wordObj.status === '3' || (index === 0 && wordObj.status === '0') ? 'current-word' : ''}`}
                                                         key={wordObj._id}
                                                     >
                                                         {wordObj.word}
                                                     </li>
+                                                   
                                                 ))}
+                                                    </ul>
                                             </React.Fragment>
                                         )}
 
-                                        {player.playerNumber !== currentPlayer && player.playerId === playerId && (
-                                            <p>
+                                        {player.playerNumber !== currentPlayer && player.playerId === playerId && (              
+                                            <p className='GP-span-player'>
+                                            <h3>{player.playerPseudo}</h3>
                                                 <span>c'est à toi deviner</span>
                                             </p>
                                         )}
-                                    </ul>
+                                  
                                 </div>
                             ))}
                     </div>

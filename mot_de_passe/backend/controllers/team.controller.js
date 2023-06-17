@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 
 exports.addPlayer = async (req, res) => {
     const { playerId, playerNumber } = req.body
-    console.log(req.body);
+    // console.log(req.body);
     try {
         // const addPlayer = await TeamModel.findOneAndUpdate({}, { $push: { playerId } }, { upsert: true, });
         const PlayerListTrue = await PlayerModel.findOneAndUpdate({ _id: playerId }, { selected: true, Number: playerNumber }, { new: true });
@@ -145,7 +145,7 @@ exports.regenList = async (req, res) => {
 
 
 exports.update = async (req, res) => {
-console.log(req.body);
+// console.log(req.body);
 
     try {
         // Supprimer tous les documents de la collection
@@ -168,16 +168,29 @@ console.log(req.body);
 }
 
 exports.chrono = async (req, res) => {
-console.log(req.body.chrono);
     const chrono = req.body.chrono;
     try {
         await TeamModel.updateOne({chrono});
-        console.log(chrono);
         res.status(200).json(chrono)
         req.app.get("io").emit("chrono", chrono);
     } catch (err) {
         res.status(400).json(err)
         // 
+    }
+
+}
+
+exports.reset = async (req, res) => {
+    try {
+        // Supprimer tous les documents de la collection
+        await PlayerModel.updateMany({ selected: true }, { selected: false, Number: 0 });
+        await TeamModel.deleteMany();
+            req.app.get("io").emit("reset");
+
+        res.status(200).json({ message: "reset" });
+
+    } catch (error) {
+        res.status(400).json({ message: "Une erreur s'est produite lors de la mise à jour des données.", error });
     }
 
 }

@@ -1,14 +1,42 @@
 @import "../_settings.scss";
 
-.GP-main{
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-text-align: center;
+.GP-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 
 }
 
+.GP-round {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 2%;
+
+}
+
+.GP-chrono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    border: solid 1px rgb(12, 224, 12);
+    padding: 2%;
+    border-radius: 10px;
+}
+
+.GP-chrono-coutndown {
+    font-size: x-large;
+    font-style: oblique;
+}
+
+.GP-teamScore {
+    font-size: x-large;
+    font-style: oblique;
+
+}
 
 .GP-TeamScore-main {
     display: flex;
@@ -25,19 +53,13 @@ text-align: center;
     display: flex;
     flex-direction: row;
     width: 50vh;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
     border: solid 1px rgb(130, 204, 238);
     padding: 2%;
     border-radius: 10px;
 }
 
-.GP-ul-player {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
 
 .GP-player-wrapper {
     display: flex;
@@ -46,13 +68,25 @@ text-align: center;
     justify-content: center;
 }
 
+.GP-ul-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
 
 .GP-li-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 5px;
     margin-bottom: 5px;
     border: 1px solid transparent;
     list-style-type: none;
+    width: 100%;
 }
+
 .current-word {
     border: solid 2px #c9cdc8;
 }
@@ -60,9 +94,15 @@ text-align: center;
 .valider {
     color: #fff;
     background-color: green;
+
 }
 
 .refuser {
     color: #fff;
     background-color: red;
+}
+
+.GP-span-player {
+    font-size: large;
+    font-style: oblique;
 }
