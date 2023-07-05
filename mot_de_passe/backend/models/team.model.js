@@ -26,7 +26,7 @@ const teamSchema = mongoose.Schema(
                             },
                             status: {
                                 type: String,
-                                enum: [0, 1, 2,3],
+                                enum: [0, 1, 2, 3],
                                 default: 0
                             }
                         }
@@ -67,8 +67,19 @@ const teamSchema = mongoose.Schema(
         chrono: {
             type: Number,
             default: 30
+        },
+        wordsNumber: {
+            type: Number,
+            default: 6
+        },
+        reset: {
+            type: Boolean,
+            default: false
+        },
+        finish: {
+            type: Boolean,
+            default: false
         }
-
     },
 
     {

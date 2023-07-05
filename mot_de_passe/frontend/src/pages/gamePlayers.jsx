@@ -12,28 +12,42 @@ const GamePlayers = () => {
     const [countdown, setCountdown] = useState(30);
     const [playerId, setPlayerId] = useState(null)
     const [currentPlayer, setCurrentPlayer] = useState(1)
+    const [clicCounter, setClicCounter] = useState(0);
+    // const [numberWord, setNumberWord] = useState('');
+   
+
     
+    const getDataGame = async () => {
+        try {
+            const player = localStorage.getItem('user')
+            setPlayerId(player)
+            const response = await axios.get("/team/dataGame")
+            setGameData(response.data);
+            setTeamScore(response.data[0].points);
+            setCountdown(response.data[0].chrono)
+            setRound(response.data[0].rounds)
+            setCurrentPlayer(response.data[0].currentPlayerWordList)
+            // setNumberWord(response.data[0].wordsNumber)
+            // const first = response.data[0].players[0].wordlist[0].status
+            // console.log(first);
+
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    
+    
+    const removePlayer = () => {
+        localStorage.removeItem('role');
+        localStorage.removeItem('pseudo');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+    };
+
+
     useEffect(() => {
-        const getDataGame = async () => {
-            try {
-                const player = localStorage.getItem('user')
-                setPlayerId(player)
-              const response = await axios.get("/team/dataGame")
-                setGameData(response.data);
-                setTeamScore(response.data[0].points);
-                setRound(response.data[0].rounds)
-                setCurrentPlayer(response.data[0].currentPlayerWordList)
-               const first = response.data[0].players[0].wordlist[0].status 
-               console.log(first);
-                
-            } catch (error) {
-                console.log(error);
-            }
-        };
-      
-        
-      
-        socket.on('startGame', (gameData) => {
+   
+        socket.on('Game', (gameData) => {
             setGameData(gameData);
             setTeamScore(gameData.points);
             setRound(gameData.rounds);
@@ -43,47 +57,63 @@ const GamePlayers = () => {
         
         
         socket.on('update', (gameData) => {
-            console.log(gameData);
+            window.location.reload()
             setGameData(gameData);   
             setTeamScore(gameData.points);
             setRound(gameData.rounds)
             setCurrentPlayer(gameData.currentPlayerWordList)
-
+            setCountdown(gameData.chrono);
+            setClicCounter(gameData.currentAttempt)
         });
         
         socket.on('chrono', (countdown) => {
-            console.log(countdown);
             setCountdown(countdown);
         });
+
+        // socket.on('endgame', () => {
+        //     navigate('/recap');
+        //     });
+            
+        // socket.on('reset', (resetGame) => {
+        //     navigate('/waitingroom');
+        // });
+       
         getDataGame();
-        
-        socket.on('endgame', () => {
-            navigate('/recap');
-            });
-            
-            
-        socket.on('reset', () => {
-            navigate('/waitingroom');
-        });
-        
         return () => {
             socket.disconnect();
         };
         
-    }, [navigate, socket]);
+    }, [socket]);
 
     useEffect(() => {
-        setGameData(gameData);
+        // setGameData(gameData);
         if (gameData) {
             setCurrentPlayer(gameData[0].currentPlayerWordList);
             setTeamScore(gameData[0].points);
             setRound(gameData[0].rounds);
-        //    const firstWord = gameData[0].players[0].wordlist[0].status
-        //     console.log(firstWord); 
+            setCountdown(gameData[0].chrono);
+            setClicCounter(gameData[0].currentAttempt)
+            if (gameData[0].reset) {
+                navigate('/waitingroom');
+            }
+            if (gameData[0].finish) {
+                removePlayer()
+                navigate('/recap');
+            }
         }
-    }, [gameData]);
+        // if (clicCounter === numberWord) {
+        //     removePlayer()
+        //     navigate('/recap');
+        // }
+ 
+    }, [clicCounter, gameData, navigate]);
 
-  
+    if (!gameData) {
+        // getDataGame();
+        // window.location.reload()
+        return <div>ça charge ...</div>
+
+    }
 
     return (
         <div className="GP-main">

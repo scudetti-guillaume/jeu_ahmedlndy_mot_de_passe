@@ -10,76 +10,91 @@ const GameViewers = () => {
     const [round, setRound] = useState(1);
     const [teamScore, setTeamScore] = useState(0);
     const [countdown, setCountdown] = useState(30);
+    const [clicCounter, setClicCounter] = useState(0);
+    // const [numberWord, setNumberWord] = useState('');
     // const [playerId, setPlayerId] = useState(null)
     // const [currentPlayer, setCurrentPlayer] = useState(1)
+    
+    const getDataGame = async () => {
+        try {
+            const response = await axios.get("/team/dataGame")
+            setGameData(response.data);
+            setTeamScore(response.data[0].points);
+            setRound(response.data[0].rounds)
+            // setNumberWord(response.data[0].wordsNumber)
+            const first = response.data[0].players[0].wordlist[0].status
+            console.log(first);
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     useEffect(() => {
-        const getDataGame = async () => {
-            try {
-                const response = await axios.get("/team/dataGame")
-                setGameData(response.data);
-                setTeamScore(response.data[0].points);
-                setRound(response.data[0].rounds)
-                // setCurrentPlayer(response.data[0].currentPlayerWordList)
-                const first = response.data[0].players[0].wordlist[0].status
-                console.log(first);
+    
+        getDataGame();
+        
+        socket.on('reset', (resetGame) => {
+            console.log(resetGame);
+            navigate('/waitingroom');
+        });
 
-            } catch (error) {
-                console.log(error);
-            }
-        };
-
-
-        socket.on('startGame', (gameData) => {
+        socket.on('Game', (gameData) => {
             setGameData(gameData);
             setTeamScore(gameData.points);
             setRound(gameData.rounds);
+            setCountdown(gameData.chrono);
+            setClicCounter(gameData.currentAttempt)
             // setCurrentPlayer(gameData.currentPlayerWordList);
-
         });
 
-
         socket.on('update', (gameData) => {
-            console.log(gameData);
+        window.location.reload()
             setGameData(gameData);
             setTeamScore(gameData.points);
             setRound(gameData.rounds)
+            setCountdown(gameData.chrono);
+            setClicCounter(gameData.currentAttempt)
             // setCurrentPlayer(gameData.currentPlayerWordList)
-
         });
 
         socket.on('chrono', (countdown) => {
-            console.log(countdown);
             setCountdown(countdown);
         });
-        getDataGame();
-
-        socket.on('endgame', () => {
-            navigate('/recap');
-        });
-
-
-        socket.on('reset', () => {
-            navigate('/waitingroom');
-        });
+    
+        // socket.on('endgame', () => {
+        //     navigate('/recap');
+        // });
 
         return () => {
             socket.disconnect();
         };
-
     }, [navigate, socket]);
 
     useEffect(() => {
-        setGameData(gameData);
+        // setGameData(gameData);
         if (gameData) {
             // setCurrentPlayer(gameData[0].currentPlayerWordList);
             setTeamScore(gameData[0].points);
             setRound(gameData[0].rounds);
+            setCountdown(gameData[0].chrono);
+            setClicCounter(gameData[0].currentAttempt)
+            if (gameData[0].reset) {
+                navigate('/waitingroom');
+            }
+            if (gameData[0].finish) {
+                navigate('/recap');
+            }
         }
-    }, [gameData]);
-
-
-
+        // if (clicCounter === numberWord){
+        //     navigate('/recap');
+        // }
+   
+    }, [clicCounter, gameData, navigate, socket]);
+    
+    if (!gameData) {
+       return <div>ça charge ...</div>
+    }
+    
     return (
         <div className="GV-main">
             <div>

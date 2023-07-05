@@ -9,6 +9,7 @@ import GamePlayer from './pages/gamePlayers';
 import GameGM from './pages/gameGM';
 import GameViewers from './pages/gameViewers';
 import SummaryGame from './pages/summaryGame';
+import ManageGame from './pages/manageGame';
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
       <BrowserRouter >
         <Routes>
           <Route path="/" element={<Main />} />
+          <Route path="/manageGame" element={<ManageGame />} />
           <Route path="/loginPlayer" element={<LoginPlayers />} />
           <Route path="/logingameMaster" element={<LoginGameMaster />} />
           <Route path="/registergamemaster" element={<RegisterGameMaster />} />

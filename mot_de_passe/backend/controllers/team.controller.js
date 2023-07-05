@@ -1,5 +1,6 @@
 const TeamModel = require("../models/team.model");
 const PlayerModel = require("../models/players.model");
+const GameSettingsModel = require("../models/gameSettings.model");
 const jwt = require("jsonwebtoken");
 
 exports.addPlayer = async (req, res) => {
@@ -8,7 +9,6 @@ exports.addPlayer = async (req, res) => {
     try {
         // const addPlayer = await TeamModel.findOneAndUpdate({}, { $push: { playerId } }, { upsert: true, });
         const PlayerListTrue = await PlayerModel.findOneAndUpdate({ _id: playerId }, { selected: true, Number: playerNumber }, { new: true });
-        console.log(PlayerListTrue);
         if (PlayerListTrue) {
             req.app.get("io").emit("playerAdded", playerId);
             res.status(200).json(PlayerListTrue);
@@ -44,8 +44,12 @@ exports.getTeam = async (req, res) => {
 };
 
 exports.startGame = async (req, res) => {
+    await TeamModel.deleteMany();
+    const data = await GameSettingsModel.find({})
+   const { chrono, wordsNumber } = data[0]
+    console.log(data[0].wordsNumber);
+    console.log(data[0].chrono);
     const PlayerListTrue = await PlayerModel.find({ selected: true }).sort({ Number: 1 }).exec();
-    
     // console.log(PlayerListTrue);
     const teamStart = []
     teamStart.push(PlayerListTrue)
@@ -54,15 +58,16 @@ exports.startGame = async (req, res) => {
             TeamModel.findOneAndUpdate(
                 {},
                 {
-                    $push: { players: { playerId: player._id, playerPseudo: player.pseudo, playerNumber: player.Number } }
+                    $push: { players: { playerId: player._id, playerPseudo: player.pseudo, playerNumber: player.Number } },
+                    wordsNumber
                 },
                 { upsert: true, new: true }
             )
                 .then((team) => {
-                    console.log(team.id)
                     team.save()
                 })
         });
+        
         await req.app.get("io").emit("startGame", teamStart);
         await res.status(200).json(teamStart)
        
@@ -110,8 +115,7 @@ exports.wordList = async (req, res) => {
 exports.getData = async (req,res) => {
     try {
         const PlayerList = await TeamModel.find({});
-        console.log(PlayerList);
-        await req.app.get("io").emit("startGame", PlayerList);
+        await req.app.get("io").emit("Game", PlayerList);
         res.status(200).json(PlayerList)
 
     } catch (err) {
@@ -148,18 +152,16 @@ exports.update = async (req, res) => {
 // console.log(req.body);
 
     try {
+        const newGameData = req.body.gameData;
         // Supprimer tous les documents de la collection
         await TeamModel.deleteMany();
-
         // Récupérer les nouvelles données à insérer
-        const newGameData = req.body.gameData;
-
         // Insérer les nouvelles données dans la collection
         await TeamModel.insertMany(newGameData).then((doc)=>{
             req.app.get("io").emit("update", doc);
-        
+            res.status(200).json(doc);
         })
-        res.status(200).json({ message: "Mise à jour effectuée avec succès." });
+       
         
     } catch (error) {
         res.status(400).json({ message: "Une erreur s'est produite lors de la mise à jour des données.", error });
@@ -171,8 +173,9 @@ exports.chrono = async (req, res) => {
     const chrono = req.body.chrono;
     try {
         await TeamModel.updateOne({chrono});
-        res.status(200).json(chrono)
         req.app.get("io").emit("chrono", chrono);
+        res.status(200).json(chrono)
+      
     } catch (err) {
         res.status(400).json(err)
         // 
@@ -184,13 +187,30 @@ exports.reset = async (req, res) => {
     try {
         // Supprimer tous les documents de la collection
         await PlayerModel.updateMany({ selected: true }, { selected: false, Number: 0 });
-        await TeamModel.deleteMany();
-            req.app.get("io").emit("reset");
-
+        const resetGame = await TeamModel.updateOne({ reset: true });
+        req.app.get("io").emit("reset", resetGame) 
+        // await PlayerModel.updateMany({ selected: true }, { selected: false, Number: 0 });
+        // await TeamModel.deleteMany();
         res.status(200).json({ message: "reset" });
-
+       
     } catch (error) {
         res.status(400).json({ message: "Une erreur s'est produite lors de la mise à jour des données.", error });
     }
 
 }
+
+// exports.finish = async (req, res) => {
+//     try {
+//         // Supprimer tous les documents de la collection
+//         await PlayerModel.updateMany({ selected: true }, { selected: false, Number: 0 });
+//         const finish = await TeamModel.updateOne({ finish: true });
+//         req.app.get("io").emit("finish", finish)
+//         // await PlayerModel.updateMany({ selected: true }, { selected: false, Number: 0 });
+//         // await TeamModel.deleteMany();
+//         res.status(200).json({ message: "game finish" });
+
+//     } catch (error) {
+//         res.status(400).json({ message: "Une erreur s'est produite lors de la mise à jour des données.", error });
+//     }
+
+// }

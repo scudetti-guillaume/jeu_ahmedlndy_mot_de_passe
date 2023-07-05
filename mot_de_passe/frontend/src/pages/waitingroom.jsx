@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 
 const Waitingroom = () => {
     const [players, setPlayers] = useState([]);
-    const [user, setUser] = useState(null);
+    const [userRole, setUserRole] = useState(null);
     const [userId, setUserId] = useState(null);
     const [team1, setTeam1] = useState([]);
     const navigate = useNavigate();
@@ -15,7 +15,6 @@ const Waitingroom = () => {
             try {
                 const response = await axios.get('/team/team');
                 const selectedPlayerIds = response.data;
-                console.log(selectedPlayerIds);
                 setTeam1(selectedPlayerIds);
             } catch (error) {
                 console.error("Erreur lors de la récupération des joueurs de l'équipe :", error);
@@ -29,7 +28,6 @@ const Waitingroom = () => {
         const fetchPlayers = async () => {
             try {
                 const response = await axios.get('/player/all');
-                console.log(response.data);
                 setPlayers(response.data);
             } catch (error) {
                 console.error('Erreur lors de la récupération des joueurs :', error);
@@ -42,7 +40,7 @@ const Waitingroom = () => {
         const getGameMaster = async () => {
             try {
                 const data = localStorage.getItem('role')
-                setUser(data);
+                setUserRole(data);
             } catch (error) {
                 console.error('Erreur lors de la récupération du gamemaster :', error);
             }
@@ -82,8 +80,6 @@ const Waitingroom = () => {
                             prevTeam1[teamSize - 1],
                         ]);
                     }
-                    // setPlayers((prevPlayers) => prevPlayers.filter((player) => player._id !== playerId));
-
                 }
             }
         });
@@ -101,30 +97,34 @@ const Waitingroom = () => {
         });
 
         socket.on('startGame', (data) => {
-            data[0].forEach(player => {
-                console.log(player._id);
-                if (userId === player._id) {
-                    navigate('/gamePlayer');
-                }
-                if (user === 'gameMaster') {
+            if (data) {
+                const selectedPlayerIds = data[0].map(player => player._id);
+                if (userRole === 'gameMaster') {
                     navigate('/gameGM');
                 }
-
-            });
-
-            // navigate('/game', { players: team1 });
-
+                if (selectedPlayerIds.includes(userId)) {
+                    navigate('/gamePlayer');
+                } 
+                else if (userRole === 'gameMaster') {
+                    navigate('/gameGM');
+                } 
+                else {
+                    navigate('/gameViewers');
+                }
+            } else {
+                return <div>ça charge</div>
+            }
         });
 
         // Clean up the Socket.IO connection on component unmount
         return () => {
             socket.disconnect();
         };
-    }, [navigate, players, team1, user, userId]);
+    }, [navigate, players, team1, userRole, userId]);
 
 
     const handleDragStart = (e, playerId, fromTeam) => {
-        const isGameMaster = user === 'gameMaster';
+        const isGameMaster = userRole === 'gameMaster';
         if (isGameMaster) {
             e.dataTransfer.setData('playerId', playerId.toString());
             e.dataTransfer.setData('fromTeam', fromTeam ? 'true' : 'false');
@@ -188,7 +188,7 @@ const Waitingroom = () => {
         // const data = localStorage.getItem('role')
         // console.log("lz" + data);
         console.log(setTeam1);
-        if (user === 'gameMaster' && team1.length === 2) {
+        if (userRole === 'gameMaster' && team1.length === 2) {
             axios.post("/team/launchgame").then((doc) => {
                 console.log(doc);
             })
@@ -228,13 +228,13 @@ const Waitingroom = () => {
                                     <p className="wrTMlistLiPlayer">Joueur {index % 2 === 0 ? 1 : 2}:</p>
                                     <p className="wrTMlistLiPseudo">{player.pseudo}</p>
                                 </div>
-                                {(user === 'gameMaster' || userId === player._id) && (
+                                {(userRole === 'gameMaster' || userId === player._id) && (
                                     <button className='wrTMButton' onClick={() => handleRemovePlayer(player._id)}>Retirer le joueur</button>
                                 )}
                             </li>
                         ))}
                     </ul>
-                    {user === 'gameMaster' && team1.length === 2 && (
+                    {userRole === 'gameMaster' && team1.length === 2 && (
                         <button className="wrStartGameButton" onClick={handleStartGame}>
                             Lancer la partie
                         </button>

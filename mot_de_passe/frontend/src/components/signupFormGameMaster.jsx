@@ -23,8 +23,7 @@ const LoginFormGameMaster = () => {
 
         if (isValid) {
             try {
-                const response = await axios.post('/gamemaster/register', { pseudo: login, password });
-                console.log(response.data);
+                await axios.post('/gamemaster/register', { pseudo: login, password , role : "gameMaster" });
                 window.location.href = '/logingamemaster';
             } catch (error) {
                 setError('Pseudo ou mot de passe invalide');

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 const SummaryGame = () => {
     const navigate = useNavigate();
+    const [userRole, setUserRole] = useState(null);
     const [gameData, setGameData] = useState(null);
     const [teamScore, setTeamScore] = useState(0);
     const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -22,10 +23,33 @@ const SummaryGame = () => {
         }
     };
 
+    const getGameMaster = async () => {
+        try {
+            const data = localStorage.getItem('role')
+            setUserRole(data)
+        } catch (error) {
+            console.error('Erreur lors de la récupération du gamemaster :', error);
+        }
+    };
+
+
+    const Menu = async () => {
+        try {
+            if (userRole === 'gameMaster') {
+                navigate('/waitingroom');
+               
+            } else {
+                navigate('/');
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     useEffect(() => {
         getDataGame();
+        getGameMaster()
     }, []);
-
 
     useEffect(() => {
         if (gameData) {
@@ -36,14 +60,11 @@ const SummaryGame = () => {
         }
     }, [currentPlayerNumber, currentPlayerWordList, gameData]);
 
-    const Menu = async () => {
-        try {
-            navigate('/waitingroom');
+    if (!gameData) {
+        return <div>ça charge ...</div>
 
-        } catch (error) {
-            console.log(error);
-        }
     }
+
 
     return (
         <div className='GM-main'>

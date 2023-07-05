@@ -3,11 +3,26 @@ import axios from '../axiosConfig.js';
 
 const ChronoGM = ({ initialTime, onTimeout }, ref) => {
     const [countdown, setCountdown] = useState(initialTime);
+    // const [countdownProgress, setCountdownProgress] = useState(countdown);
     const [isRunning, setIsRunning] = useState(false);
     // const socketRef = useRef(null);
 
+    useEffect(() => {
+    const getGameSetting = async () => {
+        try {
+            await axios.get('gamemaster/getGameSettings').then((doc) => {
+            console.log(doc.data[0].chrono);
+            setCountdown(doc.data[0].chrono)            
+            })
+        } catch (error) {
+            console.log(error);
+        }
+    };
+        getGameSetting()
+    }, []);
 
     useEffect(()  => {
+        // getGameSetting()
         let timer;
 
         if (isRunning) {
@@ -35,6 +50,7 @@ const ChronoGM = ({ initialTime, onTimeout }, ref) => {
 
     useImperativeHandle(ref, () => ({
         reset() {
+          
             setCountdown(initialTime);
             setIsRunning(false);
         },
