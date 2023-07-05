@@ -34,6 +34,7 @@ exports.signUp = async (req, res, next) => {
                 secure: false,
                 httpOnly: true,
             });
+            req.app.get("io").emit("newlogin");
             res.status(200).json({ user: user._id, role: user.role, pseudo: user.pseudo, token });
         } catch (err) {
         console.log(err);

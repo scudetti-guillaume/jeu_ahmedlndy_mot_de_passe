@@ -7,8 +7,8 @@ const GamePlayers = () => {
     const socket = io(`http://localhost:4000`);
     const navigate = useNavigate();
     const [gameData, setGameData] = useState(null);
-    const [round, setRound] = useState(1);
-    const [teamScore, setTeamScore] = useState(0);
+    // const [round, setRound] = useState(1);
+    // const [teamScore, setTeamScore] = useState(0);
     const [countdown, setCountdown] = useState(30);
     const [playerId, setPlayerId] = useState(null)
     const [currentPlayer, setCurrentPlayer] = useState(1)
@@ -23,9 +23,9 @@ const GamePlayers = () => {
             setPlayerId(player)
             const response = await axios.get("/team/dataGame")
             setGameData(response.data);
-            setTeamScore(response.data[0].points);
+            // setTeamScore(response.data[0].points);
             setCountdown(response.data[0].chrono)
-            setRound(response.data[0].rounds)
+            // setRound(response.data[0].rounds)
             setCurrentPlayer(response.data[0].currentPlayerWordList)
             // setNumberWord(response.data[0].wordsNumber)
             // const first = response.data[0].players[0].wordlist[0].status
@@ -49,8 +49,8 @@ const GamePlayers = () => {
    
         socket.on('Game', (gameData) => {
             setGameData(gameData);
-            setTeamScore(gameData.points);
-            setRound(gameData.rounds);
+            // setTeamScore(gameData.points);
+            // setRound(gameData.rounds);
             setCurrentPlayer(gameData.currentPlayerWordList);
            
         });
@@ -59,8 +59,8 @@ const GamePlayers = () => {
         socket.on('update', (gameData) => {
             window.location.reload()
             setGameData(gameData);   
-            setTeamScore(gameData.points);
-            setRound(gameData.rounds)
+            // setTeamScore(gameData.points);
+            // setRound(gameData.rounds)
             setCurrentPlayer(gameData.currentPlayerWordList)
             setCountdown(gameData.chrono);
             setClicCounter(gameData.currentAttempt)
@@ -89,8 +89,8 @@ const GamePlayers = () => {
         // setGameData(gameData);
         if (gameData) {
             setCurrentPlayer(gameData[0].currentPlayerWordList);
-            setTeamScore(gameData[0].points);
-            setRound(gameData[0].rounds);
+            // setTeamScore(gameData[0].points);
+            // setRound(gameData[0].rounds);
             setCountdown(gameData[0].chrono);
             setClicCounter(gameData[0].currentAttempt)
             if (gameData[0].reset) {
@@ -122,13 +122,13 @@ const GamePlayers = () => {
             </div>
             <div>
                 <h2 className="GP-round">
-                    Manche <span>{round}</span>
+                    Manche <span>{gameData[0].rounds}</span>
                 </h2>
                 
                 <div>
                     <div className="GP-TeamScore-main">
                         <div className="GP-TeamScore">
-                            <p>Votre équipe à un score de : <span className="GP-teamScore">{teamScore}</span></p>
+                            <p>Votre équipe à un score de : <span className="GP-teamScore">{gameData[0].points}</span></p>
                         </div>
                     </div>
                     <div className="GP-chrono">

@@ -7,10 +7,10 @@ const GameViewers = () => {
     const socket = io(`http://localhost:4000`);
     const navigate = useNavigate();
     const [gameData, setGameData] = useState(null);
-    const [round, setRound] = useState(1);
-    const [teamScore, setTeamScore] = useState(0);
-    const [countdown, setCountdown] = useState(30);
-    const [clicCounter, setClicCounter] = useState(0);
+    // const [round, setRound] = useState(1);
+    // const [teamScore, setTeamScore] = useState(0);
+    // const [countdown, setCountdown] = useState(30);
+    // const [clicCounter, setClicCounter] = useState(0);
     // const [numberWord, setNumberWord] = useState('');
     // const [playerId, setPlayerId] = useState(null)
     // const [currentPlayer, setCurrentPlayer] = useState(1)
@@ -19,8 +19,9 @@ const GameViewers = () => {
         try {
             const response = await axios.get("/team/dataGame")
             setGameData(response.data);
-            setTeamScore(response.data[0].points);
-            setRound(response.data[0].rounds)
+            // setTeamScore(response.data[0].points);
+            // setRound(response.data[0].rounds)
+            // setCountdown(gameData[0].chrono);
             // setNumberWord(response.data[0].wordsNumber)
             const first = response.data[0].players[0].wordlist[0].status
             console.log(first);
@@ -29,37 +30,43 @@ const GameViewers = () => {
         }
     };
 
+useEffect(()=>{
+    getDataGame();
+
+})
+
+
     useEffect(() => {
     
-        getDataGame();
+        // getDataGame();
         
-        socket.on('reset', (resetGame) => {
-            console.log(resetGame);
-            navigate('/waitingroom');
-        });
+        // socket.on('reset', (resetGame) => {
+        //     console.log(resetGame);
+        //     navigate('/waitingroom');
+        // });
 
         socket.on('Game', (gameData) => {
             setGameData(gameData);
-            setTeamScore(gameData.points);
-            setRound(gameData.rounds);
-            setCountdown(gameData.chrono);
-            setClicCounter(gameData.currentAttempt)
+            // setTeamScore(gameData.points);
+            // setRound(gameData.rounds);
+            // setCountdown(gameData.chrono);
+            // setClicCounter(gameData.currentAttempt)
             // setCurrentPlayer(gameData.currentPlayerWordList);
         });
 
         socket.on('update', (gameData) => {
         window.location.reload()
             setGameData(gameData);
-            setTeamScore(gameData.points);
-            setRound(gameData.rounds)
-            setCountdown(gameData.chrono);
-            setClicCounter(gameData.currentAttempt)
+            // setTeamScore(gameData.points);
+            // setRound(gameData.rounds)
+            // setCountdown(gameData.chrono);
+            // setClicCounter(gameData.currentAttempt)
             // setCurrentPlayer(gameData.currentPlayerWordList)
         });
 
-        socket.on('chrono', (countdown) => {
-            setCountdown(countdown);
-        });
+        // socket.on('chrono', (countdown) => {
+        //     setCountdown(countdown);
+        // });
     
         // socket.on('endgame', () => {
         //     navigate('/recap');
@@ -68,16 +75,16 @@ const GameViewers = () => {
         return () => {
             socket.disconnect();
         };
-    }, [navigate, socket]);
+    },);
 
     useEffect(() => {
         // setGameData(gameData);
         if (gameData) {
             // setCurrentPlayer(gameData[0].currentPlayerWordList);
-            setTeamScore(gameData[0].points);
-            setRound(gameData[0].rounds);
-            setCountdown(gameData[0].chrono);
-            setClicCounter(gameData[0].currentAttempt)
+            // setTeamScore(gameData[0].points);
+            // setRound(gameData[0].rounds);
+            // setCountdown(gameData[0].chrono);
+            // setClicCounter(gameData[0].currentAttempt)
             if (gameData[0].reset) {
                 navigate('/waitingroom');
             }
@@ -89,7 +96,7 @@ const GameViewers = () => {
         //     navigate('/recap');
         // }
    
-    }, [clicCounter, gameData, navigate, socket]);
+    }, [gameData, navigate],);
     
     if (!gameData) {
        return <div>ça charge ...</div>
@@ -102,18 +109,18 @@ const GameViewers = () => {
             </div>
             <div>
                 <h2 className="GV-round">
-                    Manche <span>{round}</span>
+                    Manche <span>{gameData[0].rounds}</span>
                 </h2>
 
                 <div>
                     <div className="GV-TeamScore-main">
                         <div className="GV-TeamScore">
-                            <p>L'équipe à marquer: <span className="GV-teamScore">{teamScore}</span></p>
+                            <p>L'équipe à marquer: <span className="GV-teamScore">{gameData[0].points}</span></p>
                         </div>
                     </div>
                     <div className="GV-chrono">
                         <p>Chrono : </p>
-                        <span className="GV-chrono-coutndown">{countdown} secondes</span>
+                        <span className="GV-chrono-coutndown">{gameData[0].chrono} secondes</span>
                     </div>
                     <div className="GV-player-main">
                         {gameData &&

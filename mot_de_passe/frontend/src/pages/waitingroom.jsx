@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
 const Waitingroom = () => {
+    const socket = io(`http://localhost:4000`);
     const [players, setPlayers] = useState([]);
     const [userRole, setUserRole] = useState(null);
     const [userId, setUserId] = useState(null);
@@ -22,17 +23,19 @@ const Waitingroom = () => {
         };
         fetchTeam();
     }, []);
+    
+    const fetchPlayers = async () => {
+        try {
+            const response = await axios.get('/player/all');
+            setPlayers(response.data);
+        } catch (error) {
+            console.error('Erreur lors de la récupération des joueurs :', error);
+        }
+    };
 
     useEffect(() => {
         // Effect pour récupérer les joueurs de la base de données
-        const fetchPlayers = async () => {
-            try {
-                const response = await axios.get('/player/all');
-                setPlayers(response.data);
-            } catch (error) {
-                console.error('Erreur lors de la récupération des joueurs :', error);
-            }
-        };
+      
         fetchPlayers();
     }, []);
 
@@ -121,6 +124,16 @@ const Waitingroom = () => {
             socket.disconnect();
         };
     }, [navigate, players, team1, userRole, userId]);
+    
+    useEffect(() => {
+        socket.on('newlogin', () => {
+            fetchPlayers();
+        });
+     
+        return () => {
+            socket.disconnect();
+        }
+    }, [socket, navigate])
 
 
     const handleDragStart = (e, playerId, fromTeam) => {
