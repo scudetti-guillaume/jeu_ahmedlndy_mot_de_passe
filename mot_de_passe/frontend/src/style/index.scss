@@ -1,8 +1,13 @@
 @import "./_settings";
+@import "./pages/_main.scss";
 @import "./pages/_loginPlayers.scss";
 @import "./pages/_loginGameMaster.scss";
 @import "./pages/_home.scss";
-@import "./pages/_game.scss";
+@import "./pages/_gamePlayers.scss";
+@import "./pages/_gameGM.scss";
+@import "./pages/_gameViewers.scss";
 @import "./pages/_waitingroom.scss";
+@import "./pages/_summaryGame.scss";
 @import "./components/loginFormPlayers.scss";
 @import "./components/signupFormGameMaster";
+@import "./components/chronoGM";

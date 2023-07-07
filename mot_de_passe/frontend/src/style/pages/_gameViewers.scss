@@ -1,0 +1,115 @@
+@import "../_settings.scss";
+
+.GV-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+}
+
+.GV-round {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 2%;
+
+}
+
+.GV-chrono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    border: solid 1px rgb(12, 224, 12);
+    padding: 2%;
+    border-radius: 10px;
+}
+
+.GV-chrono-coutndown {
+    font-size: x-large;
+    font-style: oblique;
+}
+
+.GV-teamScore {
+    font-size: x-large;
+    font-style: oblique;
+
+}
+
+.GV-TeamScore-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    border: solid 1px violet;
+    padding: 2%;
+    border-radius: 10px;
+}
+
+
+.GV-player-main {
+    display: flex;
+    flex-direction: row;
+    width: 50vh;
+    justify-content: space-around;
+    align-items: center;
+    border: solid 1px rgb(130, 204, 238);
+    padding: 2%;
+    border-radius: 10px;
+}
+
+
+.GV-player-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.GV-player-pseudo{
+display: flex;
+padding-bottom: 2%;
+font-weight: bold;
+
+}
+
+.GV-ul-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.GV-li-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px;
+    margin-bottom: 5px;
+    border: 1px solid transparent;
+    list-style-type: none;
+    width: 100%;
+}
+
+.current-word {
+    border: solid 2px #c9cdc8;
+}
+
+.valider {
+    color: #fff;
+    background-color: green;
+
+}
+
+.refuser {
+    color: #fff;
+    background-color: red;
+}
+
+.GV-span-player {
+    font-size: large;
+    font-style: oblique;
+}

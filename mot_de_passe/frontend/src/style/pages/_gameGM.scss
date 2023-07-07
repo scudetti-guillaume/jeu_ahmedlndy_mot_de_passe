@@ -1,0 +1,214 @@
+@import "../_settings.scss";
+
+.GM-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+}
+
+.GM-round {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-bottom: 1%;
+}
+
+.GM-button-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2%;
+    border: solid 3px red;
+    border-radius: 15px;
+}
+
+.GM-button-reset-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 2%;
+    width: 30%;
+}
+
+.GM-button-reset {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgb(254, 255, 255);
+    background-color: #d61818;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-weight: 500;
+    font-style: italic;
+    padding-bottom: 2%;
+    border: solid red;
+    border-radius: 10px;
+    width: 100%;
+}
+
+.GM-button-reset:hover {
+    cursor: pointer;
+}
+
+.GM-button-regen-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50%;
+}
+
+.GM-button-regen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgb(254, 255, 255);
+    background-color: #d61818;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-style: italic;
+    padding-bottom: 2%;
+    border-radius: 10px;
+    border: solid red;
+    width: 100%;
+}
+
+.GM-button-regen:hover {
+    cursor: pointer;
+}
+
+
+.GM-TeamScore-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    border: solid 2px violet;
+    padding: 2%;
+    border-radius: 10px;
+}
+
+.GM-TeamScore-point-span{
+font-size: x-large;
+    font-style: oblique;
+}
+
+
+.GM-btn-word {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-direction: row;
+    width: 70%;
+    padding-top: 2%;
+}
+
+.GM-btn-valide{
+display: flex;
+justify-content: center;
+align-items: center;
+width: 40%;
+text-align: center;
+
+}
+
+.GM-btn-word-btn-valide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    background: green;
+    border: solid 2px green;
+    border-radius: 15px;
+    font-weight: bold;
+
+}
+
+.GM-btn-word-btn-valide:hover {
+    cursor: pointer;
+}
+.GM-btn-refuse {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40%;
+    text-align: center;
+
+}
+
+.GM-btn-word-btn-refuse {
+display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    background: rgb(166, 9, 4);
+    border: solid 2px rgb(166, 9, 4);
+    border-radius: 15px;
+    font-weight: bold;
+}
+
+.GM-btn-word-btn-refuse:hover {
+    cursor: pointer;
+}
+
+.GM-player-main {
+    display: flex;
+    flex-direction: row;
+    width: 50vh;
+    justify-content: space-around;
+    align-items: center;
+    border: solid 1px rgb(130, 204, 238);
+    padding: 2%;
+    border-radius: 10px;
+}
+
+.GM-player-name{
+display: flex;
+padding-bottom: 2%;
+
+}
+
+.GM-ul-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.GM-player-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.GM-player-name{
+display: flex;
+padding-bottom: 2%;
+color: rgb(255, 0, 221);
+}
+
+.GM-li-player {
+    padding: 5px;
+    margin-bottom: 5px;
+    border: 1px solid transparent;
+    list-style-type: none;
+}
+
+.current-word {
+    border: solid 2px #c9cdc8;
+    border-radius: 10px;
+}
+
+.valider {
+    color: #fff;
+    background-color: green;
+}
+
+.refuser {
+    color: #fff;
+    background-color: red;
+}

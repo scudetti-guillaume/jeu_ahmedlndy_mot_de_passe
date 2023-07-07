@@ -1,4 +1,7 @@
 const gameMasterModel = require("../models/gameMaster.model");
+const GameSettingsModel = require("../models/gameSettings.model");
+const teamModel = require("../models/team.model");
+
 const jwt = require("jsonwebtoken");
 
 const durationTokenLogin12 = 1 * 12 * 60 * 60 * 1000;
@@ -38,12 +41,10 @@ exports.signUp = async (req, res, next) => {
 };
 
 exports.signIn = async (req, res) => {
-    const { pseudo, password } = req.body;
-    console.log(req.body);
+    const { pseudo, password, role } = req.body;
     try {
-        const user = await gameMasterModel.login(pseudo, password);
-        console.log(user);
-        const token = createToken(user._id);
+        const user = await gameMasterModel.login(pseudo, password, role);
+        const token = createToken(user._id , user.role);
         res.cookie("jwtGamemaster", token, {
             session: false,
             maxAge: durationTokenLogin12,
@@ -52,7 +53,6 @@ exports.signIn = async (req, res) => {
         });
         gameMasterModel.findOne({ _id: user, role: "gameMaster" }, (err, doc) => {
             if (doc) {
-                console.log(res);
                 res.status(200).json({ user: user._id, role: user.role, pseudo: user.pseudo, token });
              
             } else {
@@ -75,8 +75,27 @@ exports.logout = (req, res) => {
 
 
 exports.getGamemaster = async (req, res) => {
-    console.log(req);
-    const users = await gameMasterModel.find();
+  console.log(req.user);
+  if(req.user === ''){
+      res.status(200).json('not gamemaster');
+  
+  }else{
+    const users = await gameMasterModel.find({});
     console.log(users);
     res.status(200).json(users);
+  }
+}
+
+exports.gameSettings = async (req, res) => {
+    const getData = await GameSettingsModel.find({})
+    // console.log(getData);
+    res.status(200).json(getData);
+}
+
+exports.manageGame = async (req, res) => {
+console.log(req.body.data);
+    const { chrono, wordsNumber } = req.body.data;
+    const dataUpdate = await GameSettingsModel.updateMany({ chrono, wordsNumber })
+    // GameSettingsModel.updateMany 
+    res.status(200).json(dataUpdate);
 }

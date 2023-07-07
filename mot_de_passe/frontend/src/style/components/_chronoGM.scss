@@ -1,0 +1,61 @@
+@import "../_settings.scss";
+
+.GM-Chrono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    border: solid 1px green;
+    border-radius: 10px;
+    padding-bottom: 1%;
+}
+
+.GM-Chrono-countdown {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-direction: column;
+
+}
+
+.GM-btn-Chrono-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-direction: row;
+    width: 40%;
+}
+
+.GM-Chrono-countdown-seconde {
+    font-size: x-large;
+    font-style: oblique;
+    padding-bottom: 2%;
+
+}
+
+
+.GM-btn-chrono-start {
+    color: blue;
+    background-color: rgb(9, 155, 63);
+    width: 50%;
+    border: solid 1px green;
+    border-radius: 10px;
+}
+
+.GM-btn-chrono-start:hover{
+cursor: pointer;
+
+}
+
+.GM-btn-chrono-stop {
+    color: blue;
+    background-color: rgb(155, 143, 9);
+    width: 50%;
+    border: solid 1px rgb(96, 0, 128);
+    border-radius: 10px;
+}
+
+.GM-btn-chrono-stop:hover {
+    cursor: pointer;
+
+}

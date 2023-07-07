@@ -1,32 +1,41 @@
 const express = require('express');
-
+const http = require('http');
+const socketIO = require('socket.io');
 const cookieParser = require("cookie-parser");
-const bodyParser = require('body-parser');
-const cors = require("cors");
-const path = require("path")
 const mongoose = require("mongoose");
+const cors = require("cors");
+const bodyParser = require('body-parser');
+const path = require("path");
 const gameMasterRoutes = require("./routes/gameMaster.route");
 const playerRoutes = require("./routes/players.route");
-// const { requireAuth } = require("./middleware/auth.middleware");
+const  router  = require("./routes/team.route");
+const  game  = require("./routes/summaryGame.route");
 require("dotenv").config({ path: "../.env" });
+
+
 const app = express();
+const server = http.createServer(app);
+const io = socketIO(server,{ cors :{ origin : "*"}});
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(cookieParser());
+app.use(express.json());
+
 const corsOptions = {
     Origin: '*',
     origin: process.env.CLIENT_URL,
     credentials: true,
-    // allowedHeaders: ["set-cookie", "Content-type"],
     allowedHeaders: ["*", "Content-type"],
-    exposeHeaders: ["*"],
-    // exposeHeaders:["set-cookie"] ,
+    // allowedHeaders: ["set-cookie", "Content-type"],
+    exposeHeaders: ["set-cookie"],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: false,
 };
 
 app.use(cors(corsOptions));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(cookieParser());
-app.use(express.json());
+// io.use(cors(corsOptions));
+// io.origins('*:*');
 
 mongoose
     .connect(
@@ -36,21 +45,18 @@ mongoose
     )
     .then(() => console.log("Connected to MongoDB"))
     .catch((err) => console.log("Failed to connect to MongoDB", err));
-
-
-// app.get('*', requireAuth, (req, res) => {
-//     if (req.user === '') {
-//         res.status(201).json(res.data = 'notoken')
-//     } else {
-//         res.status(200).send(res.locals.user._id)
-//     }
-// });
-
+    
 app.use("/player", playerRoutes);
 app.use("/gamemaster", gameMasterRoutes);
-// app.use("/gameOn", userRoutes);
+app.use("/team", router);
+app.use("/endgame", game);
+app.set("io", io);
 
 
-app.listen(process.env.PORT, (port) =>
+ server.listen(process.env.PORT, () =>
     console.log(`listening on port ${process.env.PORT}`)
-);;
+);
+
+
+
+

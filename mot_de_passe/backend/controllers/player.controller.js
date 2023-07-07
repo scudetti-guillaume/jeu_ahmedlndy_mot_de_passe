@@ -34,14 +34,26 @@ exports.signUp = async (req, res, next) => {
                 secure: false,
                 httpOnly: true,
             });
+            req.app.get("io").emit("newlogin");
             res.status(200).json({ user: user._id, role: user.role, pseudo: user.pseudo, token });
-            console.log(user);
         } catch (err) {
         console.log(err);
             res.status(401).json('erreur veuillez reesayer');
         }
     }
 };
+
+exports.deletePlayer = async (req, res) => {
+    const playerId  = req.body.playerId
+    console.log(playerId);
+    await PlayerModel.findOneAndRemove({ _id: playerId })
+    req.app.get("io").emit("playerdelete");
+    res.status(200).json('joueur delete')
+
+};
+
+
+
 
 exports.logout = (req, res) => {
     res.cookie("jwtPlayer", "", { maxAge: durationTokenLogout });
@@ -50,9 +62,6 @@ exports.logout = (req, res) => {
 
 
 exports.getallplayer = async ( req,res ) => {
-console.log(req);
-    const users = await PlayerModel.find();
-    console.log(users);
+    const users = await PlayerModel.find({selected : false});
     res.status(200).json(users);
-
 }
