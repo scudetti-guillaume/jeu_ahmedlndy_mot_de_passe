@@ -18,6 +18,7 @@ const GameGM = () => {
     const [countdown, setCountdown] = useState(0);
     const [numberWord, setNumberWord] = useState('');
     const [clicCounter, setClicCounter] = useState(0)
+    const [gamemaster, setGameMaster] = useState(false)
     const [token, setToken] = useState('');
     const numWordsPerRound = numberWord;
     const numWordsPerRound_2 = numberWord*2 ;
@@ -56,6 +57,7 @@ const GameGM = () => {
         }
     };
 
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const getDataGame = async () => {
         try {
@@ -93,19 +95,23 @@ const GameGM = () => {
             setToken(getToken)
             await axios.post("/gamemaster/gamemaster", { token: token })
                 .then((doc) => {
-                    if (doc) {
+                    if (doc.data === 'not gamemaster') {      
+                        setGameMaster(false)
+                        return <div>Vous ne semblez pas etre gamemaster</div>
+                    } else {
+                        setGameMaster(true)
                         getGameSetting()
                         getDataGame();
-                    } else {
-                        return <div>tu n'est pas GameMaster</div>
                     }
                 })
         }
         verifyMaster()
 
-    }, [getDataGame, getGameSetting, token]);
+    }, [ getDataGame, getGameSetting, token]);
 
-
+// if (gamemaster === false){
+// return <div>Vous ne semblez pas etre gamemaster</div>
+// }
 
 
     const handleValiderMot = async () => {
@@ -227,8 +233,8 @@ const GameGM = () => {
                 updatedGameData[0].currentAttempt = reponseSend + 1
                 updatedGameData[0].currentWordIndex = currentWordIndex + 1
                 // Make the API call to update the backend with the updated data
-                await axios.post("/team/update", { gameData: updatedGameData });
-                const response = await axios.get("/team/dataGame");
+                const response = await axios.post("/team/update", { gameData: updatedGameData });
+                // const response = await axios.get("/team/dataGame");
                 setGameData(response.data)
                 chronoRef.current.reset();
             }
@@ -240,6 +246,7 @@ const GameGM = () => {
         }
     };
     
+
     useEffect(() => {
         if (gameData) {
             setCurrentWordIndex(gameData[0].currentWordIndex)
@@ -276,64 +283,67 @@ const GameGM = () => {
 
     return (
         <div className='GM-main'>
-
-            <div>
-                <h1>ahmed mot de passe</h1>
-            </div><div>
-                <h2 className='GM-round'>
-                    Manche <span>{round}</span>
-                </h2>
-                <div className='GM-button-main'>
-                    <div className='GM-button-reset-wrapper'><button className='GM-button-reset' onClick={resetGame}>Reset la game</button></div>
-                    <div className='GM-button-regen-wrapper'><button className='GM-button-regen' onClick={regenWords}>Regenerer une liste de mots</button></div>
-                </div>
-                <Chrono ref={chronoRef} initialTime={countdown} onTimeout={handleTimeout} />
-                <div className='GM-TeamScore-main'>
-                    <div className='GM-TeamScore'>
-                        <p className='GM-TeamScore-point'>L'équipe a marqué : <span className='GM-TeamScore-point-span'>{teamScore}</span></p>
-                    </div>
-                    <div className='GM-btn-word'>
-                        <div className='GM-btn-valide'>
-                            <button className='GM-btn-word-btn-valide' onClick={handleValiderMot} disabled={clicCounter === numWordsPerRound + 1}>Valider mot</button>
+            {gamemaster ? (
+            <><div>
+                    <h1>ahmed mot de passe</h1>
+                </div><div>
+                        <h2 className='GM-round'>
+                            Manche <span>{round}</span>
+                        </h2>
+                        <div className='GM-button-main'>
+                            <div className='GM-button-reset-wrapper'><button className='GM-button-reset' onClick={resetGame}>Reset la game</button></div>
+                            <div className='GM-button-regen-wrapper'><button className='GM-button-regen' onClick={regenWords}>Regenerer une liste de mots</button></div>
                         </div>
-                        <div className='GM-btn-refuse'>
-                            <button className='GM-btn-word-btn-refuse' onClick={handleRefuserMot} disabled={clicCounter === numWordsPerRound + 1}>Refuser mot</button>
-                        </div>
-                    </div>
-                </div>
-                <div className='GM-player-main'>
-                    {gameData &&
-                        gameData[0].players.map((player) => (
-                            <div className='GM-player-wrapper' key={player.playerNumber}>
-                                <h3 className='GM-player-name'>{player.playerPseudo}</h3>
-                                <ul>
-                                    {player.wordlist.map((wordObj, index) => (
-                                        <li
-                                            className={`GM-li-player ${player.playerNumber === currentPlayerWordList && currentWordIndex === index
-                                                ? 'current-word'
-                                                : wordObj.status === '1'
-                                                    ? 'valider'
-                                                    : wordObj.status === '2'
-                                                        ? 'refuser'
-                                                        : (round === 2 && player.playerNumber === currentPlayerWordList && index < currentWordIndex)
-                                                            ? 'current-word'
-                                                            : wordObj.status === '1'
-                                                                ? 'valider'
-                                                                : wordObj.status === '2'
-                                                                    ? 'refuser'
-                                                                    : ''}`}
-                                            key={wordObj._id}
-                                        >
-                                            {wordObj.word}
-                                        </li>
-                                    ))}
-                                </ul>
+                        <Chrono ref={chronoRef} initialTime={countdown} onTimeout={handleTimeout} />
+                        <div className='GM-TeamScore-main'>
+                            <div className='GM-TeamScore'>
+                                <p className='GM-TeamScore-point'>L'équipe a marqué : <span className='GM-TeamScore-point-span'>{teamScore}</span></p>
                             </div>
-                        ))}
-                </div>
+                            <div className='GM-btn-word'>
+                                <div className='GM-btn-valide'>
+                                    <button className='GM-btn-word-btn-valide' onClick={handleValiderMot} disabled={clicCounter === numWordsPerRound + 1}>Valider mot</button>
+                                </div>
+                                <div className='GM-btn-refuse'>
+                                    <button className='GM-btn-word-btn-refuse' onClick={handleRefuserMot} disabled={clicCounter === numWordsPerRound + 1}>Refuser mot</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div className='GM-player-main'>
+                            {gameData &&
+                                gameData[0].players.map((player) => (
+                                    <div className='GM-player-wrapper' key={player.playerNumber}>
+                                        <h3 className='GM-player-name'>{player.playerPseudo}</h3>
+                                        <ul>
+                                            {player.wordlist.map((wordObj, index) => (
+                                                <li
+                                                    className={`GM-li-player ${player.playerNumber === currentPlayerWordList && currentWordIndex === index
+                                                        ? 'current-word'
+                                                        : wordObj.status === '1'
+                                                            ? 'valider'
+                                                            : wordObj.status === '2'
+                                                                ? 'refuser'
+                                                                : (round === 2 && player.playerNumber === currentPlayerWordList && index < currentWordIndex)
+                                                                    ? 'current-word'
+                                                                    : wordObj.status === '1'
+                                                                        ? 'valider'
+                                                                        : wordObj.status === '2'
+                                                                            ? 'refuser'
+                                                                            : ''}`}
+                                                    key={wordObj._id}
+                                                >
+                                                    {wordObj.word}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ))}
+                        </div>
+                    </div></>
+            ) : (<div>
+                <h2>Vous n'êtes pas GameMaster</h2>
             </div>
-
-        </div>
+            )}
+        </div> 
     );
 };
 

@@ -8,16 +8,18 @@ exports.requireAuthGameMaster = (req, res, next) => {
   
     if (token) {
         jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
-            console.log(token);
-            console.log(decodedToken);
-            if (err) {
-            console.log('la');
-                res.status(401).send("token not found");
+            // console.log(token);
+            // console.log(decodedToken);
+            if (decodedToken === undefined) {
+                req.role = "";
+                req.user = "";
+                next();
             } else {
             gameMasterModel.findOne({ _id: decodedToken.pseudo }, (err, doc) => {
                 if (!doc) {
-                
-                    res.status(400).json("utilisateur banni");
+                    req.role = "";
+                    req.user = "";
+                    next();
                 } else {
                     gameMasterModel.find({ _id: decodedToken.id, role: "gameMaster" }, (err, doc) => {
                         if (doc) {
@@ -25,7 +27,9 @@ exports.requireAuthGameMaster = (req, res, next) => {
                             req.user = decodedToken.id;
                             next();
                         } else {
-                            res.status(400).json("utilisateur banni");
+                            req.role = "";
+                            req.user = "";
+                            next();
                         }
                     });
                 }
@@ -36,6 +40,6 @@ exports.requireAuthGameMaster = (req, res, next) => {
         req.role = "";
         req.user = "";
         console.log("access denied invalid token ");
-        // next();
+        next();
     }
 };

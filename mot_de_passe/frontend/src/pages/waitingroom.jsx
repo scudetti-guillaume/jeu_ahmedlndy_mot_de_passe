@@ -129,6 +129,10 @@ const Waitingroom = () => {
         socket.on('newlogin', () => {
             fetchPlayers();
         });
+        
+        socket.on('playerdelete', () => {
+            fetchPlayers();
+        });
      
         return () => {
             socket.disconnect();
@@ -197,6 +201,17 @@ const Waitingroom = () => {
         }
     };
 
+
+    const handleRemovePlayerDB = (playerId) => {
+        axios.post("/player/deleteplayer",{playerId}).then((doc)=>{
+            fetchPlayers();
+    
+        })
+    
+    
+    
+    }
+
     const handleStartGame = () => {
         // const data = localStorage.getItem('role')
         // console.log("lz" + data);
@@ -221,13 +236,20 @@ const Waitingroom = () => {
                     <ul className="wrPlayerUl" onDragOver={handleDragOver} >
                         {players.map((player) => (
                             <li
-                                className="wrPlayerIl"
+                                className="wrPlayerli"
                                 key={player._id}
                                 draggable
                                 onDragStart={(e) => handleDragStart(e, player._id, false)}
                                 style={{ cursor: 'grab', }}
                             >
-                                {player.pseudo}
+                                <div className="wrPlayerWrapper">
+                                    <p>{player.pseudo}</p>
+                               <p>{userRole === 'gameMaster'? (
+                                    <button className='wrTMButton' onClick={() => handleRemovePlayerDB(player._id)}>
+                                        Supprimer
+                                    </button>
+                                    ) : null}</p> 
+                                </div>
                             </li>
                         ))}
                     </ul>

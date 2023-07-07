@@ -75,8 +75,15 @@ exports.logout = (req, res) => {
 
 
 exports.getGamemaster = async (req, res) => {
-    const users = await gameMasterModel.find();
+  console.log(req.user);
+  if(req.user === ''){
+      res.status(200).json('not gamemaster');
+  
+  }else{
+    const users = await gameMasterModel.find({});
+    console.log(users);
     res.status(200).json(users);
+  }
 }
 
 exports.gameSettings = async (req, res) => {

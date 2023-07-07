@@ -43,6 +43,18 @@ exports.signUp = async (req, res, next) => {
     }
 };
 
+exports.deletePlayer = async (req, res) => {
+    const playerId  = req.body.playerId
+    console.log(playerId);
+    await PlayerModel.findOneAndRemove({ _id: playerId })
+    req.app.get("io").emit("playerdelete");
+    res.status(200).json('joueur delete')
+
+};
+
+
+
+
 exports.logout = (req, res) => {
     res.cookie("jwtPlayer", "", { maxAge: durationTokenLogout });
     res.redirect("./");
