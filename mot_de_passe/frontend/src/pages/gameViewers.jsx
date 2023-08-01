@@ -1,28 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import axios from '../axiosConfig.js';
+import { socket } from '../config.js';
 import { useNavigate } from 'react-router-dom';
-import { io } from 'socket.io-client';
+
 
 const GameViewers = () => {
-    const socket = io(`http://localhost:4000`);
     const navigate = useNavigate();
     const [gameData, setGameData] = useState(null);
-    // const [round, setRound] = useState(1);
-    // const [teamScore, setTeamScore] = useState(0);
-    // const [countdown, setCountdown] = useState(30);
-    // const [clicCounter, setClicCounter] = useState(0);
-    // const [numberWord, setNumberWord] = useState('');
-    // const [playerId, setPlayerId] = useState(null)
-    // const [currentPlayer, setCurrentPlayer] = useState(1)
+
     
     const getDataGame = async () => {
         try {
-            const response = await axios.get("/team/dataGame")
+            // const response = await axiosBase.get("/team/dataGame")
+            const response = socket.emit('getDataGame')
             setGameData(response.data);
-            // setTeamScore(response.data[0].points);
-            // setRound(response.data[0].rounds)
-            // setCountdown(gameData[0].chrono);
-            // setNumberWord(response.data[0].wordsNumber)
             const first = response.data[0].players[0].wordlist[0].status
             console.log(first);
         } catch (error) {
@@ -38,39 +28,16 @@ useEffect(()=>{
 
     useEffect(() => {
     
-        // getDataGame();
-        
-        // socket.on('reset', (resetGame) => {
-        //     console.log(resetGame);
-        //     navigate('/waitingroom');
-        // });
-
         socket.on('Game', (gameData) => {
             setGameData(gameData);
-            // setTeamScore(gameData.points);
-            // setRound(gameData.rounds);
-            // setCountdown(gameData.chrono);
-            // setClicCounter(gameData.currentAttempt)
-            // setCurrentPlayer(gameData.currentPlayerWordList);
         });
 
         socket.on('update', (gameData) => {
         window.location.reload()
             setGameData(gameData);
-            // setTeamScore(gameData.points);
-            // setRound(gameData.rounds)
-            // setCountdown(gameData.chrono);
-            // setClicCounter(gameData.currentAttempt)
-            // setCurrentPlayer(gameData.currentPlayerWordList)
+
         });
 
-        // socket.on('chrono', (countdown) => {
-        //     setCountdown(countdown);
-        // });
-    
-        // socket.on('endgame', () => {
-        //     navigate('/recap');
-        // });
 
         return () => {
             socket.disconnect();
@@ -78,13 +45,7 @@ useEffect(()=>{
     },);
 
     useEffect(() => {
-        // setGameData(gameData);
         if (gameData) {
-            // setCurrentPlayer(gameData[0].currentPlayerWordList);
-            // setTeamScore(gameData[0].points);
-            // setRound(gameData[0].rounds);
-            // setCountdown(gameData[0].chrono);
-            // setClicCounter(gameData[0].currentAttempt)
             if (gameData[0].reset) {
                 navigate('/waitingroom');
             }
@@ -92,9 +53,7 @@ useEffect(()=>{
                 navigate('/recap');
             }
         }
-        // if (clicCounter === numberWord){
-        //     navigate('/recap');
-        // }
+
    
     }, [gameData, navigate],);
     

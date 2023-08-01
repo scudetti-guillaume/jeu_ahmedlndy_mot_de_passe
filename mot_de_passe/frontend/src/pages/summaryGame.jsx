@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import axios from '../axiosConfig.js';
+import { socket } from '../config.js';
 import { useNavigate } from 'react-router-dom';
-// import { io } from 'socket.io-client';
+
 
 const SummaryGame = () => {
     const navigate = useNavigate();
@@ -15,7 +15,9 @@ const SummaryGame = () => {
 
     const getDataGame = async () => {
         try {
-            const response = await axios.get("/endgame/getData");
+        
+            const response = socket.emit('getEndGameData')
+            // const response = await axiosBase.get("/endgame/getData");
             console.log(response.data);
             setGameData(response.data);
         } catch (error) {

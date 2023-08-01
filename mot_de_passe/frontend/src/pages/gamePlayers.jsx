@@ -1,41 +1,44 @@
 import React, { useEffect, useState } from 'react';
-import axios from '../axiosConfig.js';
+import { socket } from '../config.js';
 import { useNavigate } from 'react-router-dom';
-import { io } from 'socket.io-client';
 
 const GamePlayers = () => {
-    const socket = io(`http://localhost:4000`);
     const navigate = useNavigate();
     const [gameData, setGameData] = useState(null);
-    // const [round, setRound] = useState(1);
-    // const [teamScore, setTeamScore] = useState(0);
-    const [countdown, setCountdown] = useState(30);
+    const [countdown, setCountdown] = useState(null);
     const [playerId, setPlayerId] = useState(null)
+    const [round,setRound] = useState(null)
     const [currentPlayer, setCurrentPlayer] = useState(1)
     const [clicCounter, setClicCounter] = useState(0);
-    // const [numberWord, setNumberWord] = useState('');
+    const [points, setTeamScore] = useState(0);
+  
    
-
-    
     const getDataGame = async () => {
         try {
             const player = localStorage.getItem('user')
-            setPlayerId(player)
-            const response = await axios.get("/team/dataGame")
-            setGameData(response.data);
-            // setTeamScore(response.data[0].points);
-            setCountdown(response.data[0].chrono)
-            // setRound(response.data[0].rounds)
-            setCurrentPlayer(response.data[0].currentPlayerWordList)
-            // setNumberWord(response.data[0].wordsNumber)
-            // const first = response.data[0].players[0].wordlist[0].status
-            // console.log(first);
+           setPlayerId(player)
+            socket.emit('getDataGame',(response)=>{
+            console.log(response.data[0]);
+            if (response.success){
+                if (response.data && response.data.length > 0) {
+                const gameDataProps = Object.values(response.data[0]);
+                if (gameDataProps.includes(undefined)) {
+                    window.location.reload()
+                    return <div>ça charge ...</div>
+                }
 
+            // const response = await axiosBase.get("/team/dataGame")
+            setRound(response.data[0].rounds)
+            setGameData(response.data);
+            setCountdown(response.data[0].chrono)
+            setCurrentPlayer(response.data[0].currentPlayerWordList)
+                }
+            }
+            })
         } catch (error) {
             console.log(error);
         }
     };
-    
     
     const removePlayer = () => {
         localStorage.removeItem('role');
@@ -47,52 +50,65 @@ const GamePlayers = () => {
 
     useEffect(() => {
    
-        socket.on('Game', (gameData) => {
-            setGameData(gameData);
-            // setTeamScore(gameData.points);
-            // setRound(gameData.rounds);
-            setCurrentPlayer(gameData.currentPlayerWordList);
-           
+        socket.on('Game', async (response) => {
+         if (response.success){
+             const data = response.data
+             setGameData(data);
+             setRound(data[0].rounds)
+             setCountdown(data[0].chrono)
+             setCurrentPlayer(data.currentPlayerWordList);
+         }
         });
         
-        
-        socket.on('update', (gameData) => {
-            window.location.reload()
-            setGameData(gameData);   
-            // setTeamScore(gameData.points);
-            // setRound(gameData.rounds)
-            setCurrentPlayer(gameData.currentPlayerWordList)
-            setCountdown(gameData.chrono);
-            setClicCounter(gameData.currentAttempt)
-        });
-        
-        socket.on('chrono', (countdown) => {
-            setCountdown(countdown);
+        socket.on('reset', () => {
+            navigate('/waitingroom');
         });
 
-        // socket.on('endgame', () => {
-        //     navigate('/recap');
-        //     });
-            
-        // socket.on('reset', (resetGame) => {
-        //     navigate('/waitingroom');
-        // });
-       
-        getDataGame();
-        return () => {
-            socket.disconnect();
-        };
+        socket.on('update', async (response) => {
+            if (response.success) {
+                const data = await response.data
+            // window.location.reload()
+                setGameData(data);   
+                setRound(data.rounds)
+                setCurrentPlayer(data.currentPlayerWordList)
+                setCountdown(data.chrono);
+                setClicCounter(data.currentAttempt)
+            }
+        });
         
-    }, [socket]);
 
+     
+        // return () => {
+        //     socket.disconnect();
+        // };
+        
+    }, [navigate]);
+    
+     useEffect(()=>{
+         getDataGame();
+     })
+     
+     
     useEffect(() => {
-        // setGameData(gameData);
         if (gameData) {
+            if (gameData && gameData.length > 0) {
+            const gameDataProps = Object.values(gameData[0]);
+            if (gameDataProps.includes(undefined)) {
+                getDataGame();
+                return <div>ça charge ...</div>            
+            }
             setCurrentPlayer(gameData[0].currentPlayerWordList);
-            // setTeamScore(gameData[0].points);
-            // setRound(gameData[0].rounds);
             setCountdown(gameData[0].chrono);
             setClicCounter(gameData[0].currentAttempt)
+            setRound(gameData[0].rounds)
+            setTeamScore(gameData[0].points)
+            if (round === undefined){
+                getDataGame();
+            }
+            if (points === undefined) {
+                getDataGame();
+            }
+            
             if (gameData[0].reset) {
                 navigate('/waitingroom');
             }
@@ -101,18 +117,11 @@ const GamePlayers = () => {
                 navigate('/recap');
             }
         }
-        // if (clicCounter === numberWord) {
-        //     removePlayer()
-        //     navigate('/recap');
-        // }
- 
-    }, [clicCounter, gameData, navigate]);
+    }
+    }, [gameData, navigate]);
 
     if (!gameData) {
-        // getDataGame();
-        // window.location.reload()
         return <div>ça charge ...</div>
-
     }
 
     return (
@@ -133,7 +142,7 @@ const GamePlayers = () => {
                     </div>
                     <div className="GP-chrono">
                         <p>Chrono : </p>
-                        <span className="GP-chrono-coutndown">{countdown} secondes</span>
+                        <span className="GP-chrono-coutndown">{gameData[0].chrono} secondes</span>
                     </div>
                     <div className="GP-player-main">
                         {gameData &&

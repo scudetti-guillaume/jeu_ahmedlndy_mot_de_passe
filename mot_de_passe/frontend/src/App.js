@@ -15,7 +15,7 @@ import ManageGame from './pages/manageGame';
 function App() {
   return (
     <>
-      {/* <BrowserRouter basename="/ahmed_jeu_mdp/">  */}
+      {/* <BrowserRouter basename="/mdp">  */}
       <BrowserRouter >
         <Routes>
           <Route path="/" element={<Main />} />

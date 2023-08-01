@@ -15,7 +15,7 @@ exports.requireAuthGameMaster = (req, res, next) => {
                 req.user = "";
                 next();
             } else {
-            gameMasterModel.findOne({ _id: decodedToken.pseudo }, (err, doc) => {
+            gameMasterModel.findOne({ _id: decodedToken.id }, (err, doc) => {
                 if (!doc) {
                     req.role = "";
                     req.user = "";

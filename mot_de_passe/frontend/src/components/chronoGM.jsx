@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'react';
-import axios from '../axiosConfig.js';
+import { socket} from '../config.js';
 
 const ChronoGM = ({ initialTime, onTimeout }, ref) => {
     const [countdown, setCountdown] = useState(initialTime);
@@ -10,53 +10,62 @@ const ChronoGM = ({ initialTime, onTimeout }, ref) => {
     useEffect(() => {
     const getGameSetting = async () => {
         try {
-            await axios.get('gamemaster/getGameSettings').then((doc) => {
-            console.log(doc.data[0].chrono);
-            setCountdown(doc.data[0].chrono)            
+            socket.emit('getGameSettings', (response) => {
+                if (response.success) {
+                    setCountdown(response.data[0].chrono)
+                }
             })
+
+            // await axiosBase.get('gamemaster/getGameSettings').then((doc) => {
+            // console.log(doc.data[0].chrono);
+            // setCountdown(doc.data[0].chrono)            
+            // })
         } catch (error) {
             console.log(error);
         }
     };
+    
+   
         getGameSetting()
-    }, []);
+    },);
 
     useEffect(()  => {
-        // getGameSetting()
         let timer;
-
         if (isRunning) {
             timer = setInterval(() => {
                 setCountdown(prevCountdown => {
                     if (prevCountdown === 1) {
                         clearInterval(timer);
                         setIsRunning(false);
-                        onTimeout();
+                        onTimeout();                      
                     }
                     return prevCountdown - 1;
                 });
-             
             }, 1000);
             
-            
         }
-        axios.post("/team/chrono", { chrono: countdown });
-       
-        return () => {
-         
+        socket.emit('getChrono', { chrono: countdown }, (response) => {
+            if (response.success) {
+                console.log(response.data);
+                setCountdown(response.data)
+            }
+        })
+    
+        // axiosBase.post("/team/chrono", { chrono: countdown });    
+        return () => {        
             clearInterval(timer);
         };
     }, [countdown, isRunning, onTimeout]);
 
     useImperativeHandle(ref, () => ({
-        reset() {
-          
+        reset() {     
             setCountdown(initialTime);
             setIsRunning(false);
         },
     }));
 
     const handleStart = () => {
+    console.log('chronostart');
         setIsRunning(true);
     };
 

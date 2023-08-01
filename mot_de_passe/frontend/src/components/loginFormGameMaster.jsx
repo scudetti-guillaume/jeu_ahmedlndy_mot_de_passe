@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import axios from '../axiosConfig.js';
+import { useNavigate } from 'react-router-dom';
+import { socket} from '../config.js';
 
 const LoginFormGameMaster = () => {
+    const navigate = useNavigate();
     const [login, setLogin] = useState('');
     const [isValid, setIsValid] = useState(true);
     const [password, setPassword] = useState('');
@@ -23,14 +25,25 @@ const LoginFormGameMaster = () => {
         if (isValid) {
             try {
                 setError(null);
-                await axios.post('/gamemaster/login', { pseudo: login, password })
-                .then((doc) => {
-                        localStorage.setItem('user', doc.data.user);
-                        localStorage.setItem('pseudo', doc.data.pseudo);
-                        localStorage.setItem('role', doc.data.role);
-                        localStorage.setItem('token', doc.data.token);
-                    });            
-                window.location.href = '/waitingroom';
+                socket.emit('loginGameMaster', { pseudo: login, password }, (response)=>{
+                if (response.success) {
+                console.log(response);
+                    localStorage.setItem('user', response.data.user);
+                    localStorage.setItem('pseudo', response.data.pseudo);
+                    localStorage.setItem('role', response.data.role);
+                    localStorage.setItem('token', response.data.token);
+                    navigate('/waitingroom')
+                }
+                })
+
+                // await axiosBase.post('/gamemaster/login', { pseudo: login, password })
+                // .then((doc) => {
+                //         localStorage.setItem('user', doc.data.user);
+                //         localStorage.setItem('pseudo', doc.data.pseudo);
+                //         localStorage.setItem('role', doc.data.role);
+                //         localStorage.setItem('token', doc.data.token);
+                //     });            
+               
             } catch (error) {
                 setError('Pseudo invalide.');
                 console.error('Erreur veuillez reesayer');

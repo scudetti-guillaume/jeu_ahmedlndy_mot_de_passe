@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import axios from '../axiosConfig.js';
+import { socket } from '../config.js';
 import { useNavigate } from 'react-router-dom';
-import { io } from 'socket.io-client';
+
 
 const Waitingroom = () => {
-    const socket = io(`http://localhost:4000`);
     const [players, setPlayers] = useState([]);
     const [userRole, setUserRole] = useState(null);
     const [userId, setUserId] = useState(null);
     const [team1, setTeam1] = useState([]);
     const navigate = useNavigate();
-
+    
     useEffect(() => {
         const fetchTeam = async () => {
             try {
-                const response = await axios.get('/team/team');
-                const selectedPlayerIds = response.data;
-                setTeam1(selectedPlayerIds);
+                socket.emit('getTeam', (response) => {
+                    if (response.success) {
+                        const selectedPlayerIds = response.data;
+                        setTeam1(selectedPlayerIds);
+                    } else {
+                        console.error("Erreur lors de la récupération des joueurs de l'équipe :", response.error);
+                    }
+                });
             } catch (error) {
                 console.error("Erreur lors de la récupération des joueurs de l'équipe :", error);
             }
@@ -24,18 +28,26 @@ const Waitingroom = () => {
         fetchTeam();
     }, []);
     
+    
     const fetchPlayers = async () => {
         try {
-            const response = await axios.get('/player/all');
-            setPlayers(response.data);
+            socket.emit('allPlayer', (response) => {
+                if (response.success) {
+                    console.log(response);
+                    setPlayers(response.data); 
+                    console.log(setPlayers);
+                } else {
+                    console.error('Erreur lors de la récupération des joueurs :', response.error);
+                }
+            });
         } catch (error) {
             console.error('Erreur lors de la récupération des joueurs :', error);
         }
     };
+    
 
+  
     useEffect(() => {
-        // Effect pour récupérer les joueurs de la base de données
-      
         fetchPlayers();
     }, []);
 
@@ -61,20 +73,86 @@ const Waitingroom = () => {
         }; getUserId()
     }, []);
 
+    // useEffect(() => {
+    //     socket.on('playerAdded', (playerId) => {
+    //     console.log('adddplayeraction');
+    //         console.log(playerId);
+    //         const playerToFind = playerId.playerId
+    //         const playerToAdd = players.find((player) => player._id === playerToFind);
+    //         if (playerToAdd) {
+    //             const teamSize = team1.length;
+    //             if (teamSize < 2) {
+    //                 if (teamSize % 2 === 0) {
+    //                     const player1 = { ...playerToAdd, role: 'Joueur 1' };
+    //                     setTeam1((prevTeam1) => [...prevTeam1, player1]);
+    //                 } else {
+    //                     const player2 = { ...playerToAdd, role: 'Joueur 2' };
+    //                     setTeam1((prevTeam1) => [
+    //                         ...prevTeam1.slice(0, teamSize - 1),
+    //                         player2,
+    //                         prevTeam1[teamSize - 1],
+    //                     ]);
+    //                 }
+    //             }
+    //         }
+    //     });
+
+    //     socket.on('playerRemoved', (playerId) => {
+    //         console.log('deleteeeplayeraction');
+    //         console.log(playerId);
+    //         const playerToFind = playerId.playerId
+    //         const playerToRemove = team1.find((player) => player._id === playerToFind);
+    //         if (playerToRemove) {
+    //             setPlayers((prevPlayers) => [...prevPlayers, playerToRemove]);
+    //             setTeam1((prevTeam1) => prevTeam1.filter((player) => player._id !== playerToFind));
+    //             socket.emit('playerRemove', { playerId: playerToRemove._id }, (response) => {
+    //                 if (response.success) {
+    //                     console.log(response);
+    //                     // socket.emit('playerRemoved', playerId)
+    //                     console.log('player enlever');
+    //                 }
+    //             })
+    //             // axiosBase.patch("/team/removeplayer", { playerId: playerToRemove._id }).then((doc) => {
+    //             //     console.log(doc);
+    //             // })
+    //         }
+    //     });
+
+    //     socket.on('startGame', (data) => {
+    //         if (data) {
+    //             const selectedPlayerIds = data[0].map(player => player._id);
+    //             if (userRole === 'gameMaster') {
+    //                 navigate('/gameGM');
+    //             }
+    //             if (selectedPlayerIds.includes(userId)) {
+    //                 navigate('/gamePlayer');
+    //             } 
+    //             else if (userRole === 'gameMaster') {
+    //                 navigate('/gameGM');
+    //             } 
+    //             else {
+    //                 navigate('/gameViewers');
+    //             }
+    //         } else {
+    //             return <div>ça charge</div>
+    //         }
+    //     });
+
+    // }, [navigate, players, team1, userRole, userId]);
+    
     useEffect(() => {
-        const socket = io(`http://localhost:4000`);
-        socket.on('playerAdded', (playerId) => {
-            // console.log(playerId);
-            const playerToFind = playerId
+        // Écouteur d'événement pour 'playerAdded'
+        const handlePlayerAdded = (playerId) => {
+            console.log('playerAdded action');
+            console.log(playerId);
+            const playerToFind = playerId.playerId;
             const playerToAdd = players.find((player) => player._id === playerToFind);
-            // console.log(playerToAdd);
             if (playerToAdd) {
                 const teamSize = team1.length;
                 if (teamSize < 2) {
                     if (teamSize % 2 === 0) {
                         const player1 = { ...playerToAdd, role: 'Joueur 1' };
                         setTeam1((prevTeam1) => [...prevTeam1, player1]);
-                        console.log(player1);
                     } else {
                         const player2 = { ...playerToAdd, role: 'Joueur 2' };
                         setTeam1((prevTeam1) => [
@@ -84,60 +162,74 @@ const Waitingroom = () => {
                         ]);
                     }
                 }
+                fetchPlayers();
             }
-        });
+        };
 
-        // Listen for the 'playerRemoved' event
-        socket.on('playerRemoved', (playerId) => {
-            const playerToRemove = team1.find((player) => player._id === playerId);
+        // Écouteur d'événement pour 'playerRemoved'
+        const handlePlayerRemoved = (playerId) => {
+            console.log('deleteeeplayeraction');
+            console.log(playerId);
+            const playerToFind = playerId.playerId;
+            const playerToRemove = team1.find((player) => player._id === playerToFind);
             if (playerToRemove) {
                 setPlayers((prevPlayers) => [...prevPlayers, playerToRemove]);
-                setTeam1((prevTeam1) => prevTeam1.filter((player) => player._id !== playerId));
-                axios.patch("/team/removeplayer", { playerId: playerToRemove._id }).then((doc) => {
-                    console.log(doc);
-                })
+                setTeam1((prevTeam1) => prevTeam1.filter((player) => player._id !== playerToFind));
+                socket.emit('playerRemove', { playerId: playerToRemove._id }, (response) => {
+                    if (response.success) {
+                        console.log(response);
+                        console.log('player enlever');
+                    }
+                });
+                fetchPlayers();
             }
-        });
+          
+        };
 
-        socket.on('startGame', (data) => {
+        // Écouteur d'événement pour 'startGame'
+        const handleStartGame = (data) => {
+        console.log(data);
+        console.log('je vais me lancer');
             if (data) {
-                const selectedPlayerIds = data[0].map(player => player._id);
+                console.log(data);
+                const selectedPlayerIds = data[0].map((player) => player._id);
+                console.log(selectedPlayerIds);
                 if (userRole === 'gameMaster') {
                     navigate('/gameGM');
                 }
                 if (selectedPlayerIds.includes(userId)) {
                     navigate('/gamePlayer');
-                } 
-                else if (userRole === 'gameMaster') {
+                } else if (userRole === 'gameMaster') {
                     navigate('/gameGM');
-                } 
-                else {
+                } else {
                     navigate('/gameViewers');
                 }
             } else {
-                return <div>ça charge</div>
+                return <div>ça charge</div>;
             }
-        });
-
-        // Clean up the Socket.IO connection on component unmount
-        return () => {
-            socket.disconnect();
         };
-    }, [navigate, players, team1, userRole, userId]);
+    
+        socket.on('playerAdded', handlePlayerAdded);
+        socket.on('playerRemoved', handlePlayerRemoved);
+        socket.on('startGame', handleStartGame);
+    
+        return () => {
+            socket.off('playerAdded', handlePlayerAdded);
+            socket.off('playerRemoved', handlePlayerRemoved);
+            socket.off('startGame', handleStartGame);
+        };
+    }, [players, team1, userRole, userId, navigate]);
+    
     
     useEffect(() => {
-        socket.on('newlogin', () => {
+        socket.on('newPlayer', () => {
+        console.log('jesuislafecth');
             fetchPlayers();
         });
-        
-        socket.on('playerdelete', () => {
+        socket.on('playerDeleted', () => {
             fetchPlayers();
         });
-     
-        return () => {
-            socket.disconnect();
-        }
-    }, [socket, navigate])
+    }, [navigate])
 
 
     const handleDragStart = (e, playerId, fromTeam) => {
@@ -167,7 +259,6 @@ const Waitingroom = () => {
                 if (teamSize % 2 === 0) {
                     player = { ...playerToAdd, role: 1 };
                     setTeam1((prevTeam1) => [...prevTeam1, player]);
-
                     // console.log(player1);
                 } else {
                     player = { ...playerToAdd, role: 2 };
@@ -175,15 +266,19 @@ const Waitingroom = () => {
                         ...prevTeam1.slice(0, teamSize - 1),
                         player,
                         prevTeam1[teamSize - 1],
-
                     ]);
                 }
-                setPlayers((prevPlayers) => prevPlayers.filter((player) => player._id !== playerId));
-                console.log(player.role);
-                // console.log(player2);
-                axios.post("/team/addplayer", { playerId: playerId, playerNumber: player.role }).then((doc) => {
-                    console.log(doc);
-                })
+                setPlayers((prevPlayers) => prevPlayers.filter((player) => player._id !== playerId));             
+                socket.emit('playerAdd', { playerId: playerId, playerNumber: player.role }, (response)=>{
+                if (response.success){
+                console.log(response);
+                    // socket.emit('playerAdded', playerId )
+                console.log('player ajouter');
+                }
+                })               
+                // axiosBase.post("/team/addplayer", { playerId: playerId, playerNumber: player.role }).then((doc) => {
+                //     console.log(doc);
+                // })
             } else {
                 alert('Équipe complète !');
             }
@@ -195,34 +290,44 @@ const Waitingroom = () => {
         if (playerToRemove) {
             setPlayers((prevPlayers) => [...prevPlayers, playerToRemove]);
             setTeam1((prevTeam1) => prevTeam1.filter((player) => player._id !== playerId));
-            axios.patch("/team/removeplayer", { playerId: playerToRemove._id }).then((doc) => {
-                console.log(doc);
+            socket.emit('playerRemove', { playerId: playerToRemove._id}, (response) => {
+                if (response.success) {
+                console.log(response);
+                    // socket.emit('playerRemoved', playerId)
+                    console.log('player enlever');
+                }
             })
+            // axiosBase.patch("/team/removeplayer", { playerId: playerToRemove._id }).then((doc) => {
+            //     console.log(doc);
+            // })
         }
     };
 
-
     const handleRemovePlayerDB = (playerId) => {
-        axios.post("/player/deleteplayer",{playerId}).then((doc)=>{
-            fetchPlayers();
-    
+        socket.emit('playerDelete', { playerId : playerId },(response) =>{
+            if (response.success) {
+                socket.emit('playerDeleted')
+                console.log('player supprimer');
+                console.log(response.data);
+            }
         })
-    
-    
-    
+        // axiosBase.post("/player/deleteplayer",{playerId}).then((doc)=>{
+        //     fetchPlayers();
+        // })
     }
 
     const handleStartGame = () => {
-        // const data = localStorage.getItem('role')
-        // console.log("lz" + data);
         console.log(setTeam1);
         if (userRole === 'gameMaster' && team1.length === 2) {
-            axios.post("/team/launchgame").then((doc) => {
-                console.log(doc);
-            })
-
-            // Rediriger vers la page "/game" avec les joueurs sélectionnés
-            // navigate('/game', { players: team1 });
+        socket.emit('launchGame', (response) =>{
+            if (response.success) {
+            // socket.emit('startGame')
+                console.log(response);
+            }
+        })       
+            // axiosBase.post("/team/launchgame").then((doc) => {
+            //     console.log(doc);
+            // })
         }
     };
 
@@ -281,3 +386,24 @@ const Waitingroom = () => {
 };
 
 export default Waitingroom;
+  // useEffect(() => {
+    //     const fetchTeam = async () => {
+    //         try {
+    //             const response = await axiosBase.get('/team/team');
+    //             const selectedPlayerIds = response.data;
+    //             setTeam1(selectedPlayerIds);
+    //         } catch (error) {
+    //             console.error("Erreur lors de la récupération des joueurs de l'équipe :", error);
+    //         }
+    //     };
+    //     fetchTeam();
+    // }, []);
+
+    // const fetchPlayers = async () => {
+    //     try {
+    //         const response = await axiosBase.get('/player/all');
+    //         setPlayers(response.data);
+    //     } catch (error) {
+    //         console.error('Erreur lors de la récupération des joueurs :', error);
+    //     }
+    // };

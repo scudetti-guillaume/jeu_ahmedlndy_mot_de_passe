@@ -4,7 +4,8 @@
   "description": "ahmed mot de passe",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "test": " node server.js"
   },
   "author": "",
   "license": "ISC",
@@ -16,10 +17,10 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
     "express": "^4.18.2",
+    "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.0",
     "mongodb": "^5.5.0",
     "mongoose": "^6.4.5",
-    "node": "^18.13.0",
     "nodemon": "^2.0.22",
     "socket.io": "^4.6.2"
   }

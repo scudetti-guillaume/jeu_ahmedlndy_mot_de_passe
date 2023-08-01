@@ -1,12 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Chrono from '../components/chronoGM';
-import axios from '../axiosConfig.js';
+import { socket } from '../config.js';
 import { useNavigate } from 'react-router-dom';
-import { io } from 'socket.io-client';
-
 
 const GameGM = () => {
-    const socket = io(`http://localhost:4000`);
+
     const navigate = useNavigate();
     const chronoRef = useRef(null);
     const [gameData, setGameData] = useState(null);
@@ -16,27 +14,119 @@ const GameGM = () => {
     const [currentPlayerNumber, setCurrentPlayerNumbers] = useState(0)
     const [currentPlayerWordList, setCurrentPlayerWordList] = useState(0)
     const [countdown, setCountdown] = useState(0);
-    const [numberWord, setNumberWord] = useState('');
+    const [numberWord, setNumberWord] = useState(0);
     const [clicCounter, setClicCounter] = useState(0)
     const [gamemaster, setGameMaster] = useState(false)
     const [token, setToken] = useState('');
     const numWordsPerRound = numberWord;
-    const numWordsPerRound_2 = numberWord*2 ;
+    // const numWordsPerRound_2 = numberWord;
 
-   // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => {
+        const verifyMaster = async () => {
+            const getToken = localStorage.getItem('token');
+            setToken(getToken);
+
+            const res = await new Promise((resolve, reject) => {
+                socket.emit('getGameMaster', { token: getToken }, (response) => {
+                    resolve(response);
+                });
+            });
+
+            if (res.success) {
+                if (res.data === 'not gamemaster') {
+                    setGameMaster(false);
+                } else {
+                    setGameMaster(true);
+                    // await getWords(numWordsPerRound, []);
+                    // await getDataGame()
+                }
+            }
+        };
+        verifyMaster();
+    }, []);
+
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => {
     const getGameSetting = async () => {
         try {
-            await axios.get('gamemaster/getGameSettings').then((doc) => {
-                setCountdown(doc.data[0].chrono)
-                setNumberWord(doc.data[0].wordsNumber)
-            })
+            const response = await new Promise((resolve, reject) => {
+                socket.emit('getGameSettings', (response) => {
+                    resolve(response);
+                });
+            });
+            if (response.success) {
+                setCountdown(response.data[0].chrono)
+                setNumberWord(response.data[0].wordsNumber)
+            }
+            // getDataGame(); 
+
+            // await axiosBase.get('gamemaster/getGameSettings').then((doc) => {
+            //     setCountdown(doc.data[0].chrono)
+            //     setNumberWord(doc.data[0].wordsNumber)
+            // })
         } catch (error) {
             console.log(error);
         }
     };
+        getGameSetting()
+    }, [])
+
+    // socket.on('chrono',(response) => {
+    // console.log(response.data);
+    //     setCountdown(response.data)
+    // })
+
+    useEffect(() => {
+        const getWords = async (numWords, usedWords) => {
+            try {
+                const response = await fetch(`https://api.datamuse.com/words?ml=fr&max=1000`);
+                const data = await response.json();
+                const frenchWords = data
+                    .filter(word => word.word.match(/^[a-zA-ZÀ-ÿ]{6,}$/))
+                    .map(word => word.word.toLowerCase());
+                const newWords = frenchWords.filter(word => !usedWords.includes(word));
+                for (let i = newWords.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [newWords[i], newWords[j]] = [newWords[j], newWords[i]];
+                }
+                const player1Words = newWords.slice(0, numWords / 2).map(word => ({ word, status: 0 }));
+                const player2Words = newWords.slice(numWords / 2, numWords).map(word => ({ word, status: 0 }));
+                socket.emit('getWord', { player1Words, player2Words }, (res) => {
+                    if (res.success) {
+                        socket.emit('getDataGame', (res) => {
+                            if (res.success) {
+                                setGameData(res.data);
+                            }
+                        });
+                    }
+                })
+                // await axiosBase.post("/team/words", { player1Words, player2Words });
+            } catch (error) {
+                console.log(error);
+                return [];
+            }
+        };
+        // getGameSetting ()
+        getWords()
+    }, [])
+    // const getDataGame = async () => {
+    //     try {
+
+    //         socket.emit('getDataGame', (res) => {
+    //             if (res.success) {
+    //                 setGameData(res.data);
+    //             }
+    //         })
+    //         // const response = await axiosBase.get("/team/dataGame");
+    //         // setGameData(response.data);
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // };
 
 
-    const getWords = async (numWords, usedWords) => {
+    const getWords_2 = async (numWords, usedWords) => {
         try {
             const response = await fetch(`https://api.datamuse.com/words?ml=fr&max=1000`);
             const data = await response.json();
@@ -50,69 +140,114 @@ const GameGM = () => {
             }
             const player1Words = newWords.slice(0, numWords / 2).map(word => ({ word, status: 0 }));
             const player2Words = newWords.slice(numWords / 2, numWords).map(word => ({ word, status: 0 }));
-            await axios.post("/team/words", { player1Words, player2Words });
+            socket.emit('regenList', { player1Words, player2Words }, (res) => {
+                if (res.success) {
+                    setGameData(res.data);
+                }
+            })
+            // await axiosBase.post("/team/words", { player1Words, player2Words });
         } catch (error) {
             console.log(error);
             return [];
         }
     };
 
+    // const getDataGame_2 = async () => {
+    //     try {
+    //         // await getGameSetting() 
+    //         await getWords_2(numberWord, []).then(()=>{
+    //         console.log('jerequete');
+    //             socket.emit('getDataGame', (res) => {
+    //                 if (res.success) {
+    //                 console.log(res);
+    //                     setGameData(res.data);
+    //                 }
+    //             })
+    //         })
+    //         // const response = await axiosBase.get("/team/dataGame");
+    //         // setGameData(response.data);
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const getDataGame = async () => {
-        try {
-            await getWords(numWordsPerRound, [])
-            const response = await axios.get("/team/dataGame");
-            setGameData(response.data);
-        } catch (error) {
-            console.log(error);
-        }
-    };
+    // const getDataGame_2 = async () => {
+    //     try {
+    //         socket.emit('regenList',(res)=>{
+    //             if (res.success) {
+    //                 socket.emit('getDataGame', (res) => {
+    //                     if (res.success) {
+    //                         setGameData(res.data);
+    //                     }
+    //                 })            
+    //             }   
+    //         })
+    //         // await axiosBase.patch("/team/regenwords")
+    //         // await getDataGame_2()
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // }
 
-    const getDataGame_2 = async () => {
-        try {
-            await getWords(numWordsPerRound_2, [])
-            const response = await axios.get("/team/dataGame");
-            setGameData(response.data);
-        } catch (error) {
-            console.log(error);
-        }
-    };
+    // const verifyMaster = async () => {
+    //     const getToken = localStorage.getItem('token');
+    //     setToken(getToken)
 
-    const regenWords = async () => {
-        try {
-            await axios.patch("/team/regenwords")
-            await getDataGame_2()
-        } catch (error) {
-            console.log(error);
-            return [];
-        }
-    }
+    //     const res = await new Promise((resolve, reject) => {
+    //         socket.emit('getGameMaster', { token: token }, (response) => {
+    //             resolve(response);
+    //         });
+    //     });
+
+    //     // socket.emit('getGameMaster', { token: token }, (res) => {
+    //         if (res.success) {
+    //             if (res.data === 'not gamemaster') {
+    //                 setGameMaster(true)
+    //                 // return <div>Vous ne semblez pas etre gamemaster</div>
+    //             } else {
+    //                 setGameMaster(true);
+    //                 await getGameSetting();
+    //                 await getWords(numWordsPerRound, []);
+    //             }
+    //         }
+    //     // })
+
+    //     // await axiosBase.post("/gamemaster/gamemaster", { token: token })
+    //     //     .then((doc) => {
+    //     //         if (doc.data === 'not gamemaster') {      
+    //     //             setGameMaster(false)
+    //     //             return <div>Vous ne semblez pas etre gamemaster</div>
+    //     //         } else {
+    //     //             setGameMaster(true)
+    //     //             getGameSetting()
+    //     //             getDataGame();
+    //     //         }
+    //     //     })
+    // }
+
+
+
+    // useEffect(() => {
+    //     if (gamemaster) {
+    //         socket.emit('getDataGame', (res) => {
+    //             if (res.success) {
+    //                 setGameData(res.data);
+    //             }
+    //         });
+    //     }
+    // }, [gamemaster]);
+
+
 
     useEffect(() => {
-        const verifyMaster = async () => {
-            const getToken = localStorage.getItem('token');
-            setToken(getToken)
-            await axios.post("/gamemaster/gamemaster", { token: token })
-                .then((doc) => {
-                    if (doc.data === 'not gamemaster') {      
-                        setGameMaster(false)
-                        return <div>Vous ne semblez pas etre gamemaster</div>
-                    } else {
-                        setGameMaster(true)
-                        getGameSetting()
-                        getDataGame();
-                    }
-                })
+        if (gameData) {
+            setCurrentWordIndex(gameData[0].currentWordIndex)
+            setTeamScore(gameData[0].points)
+            setCurrentPlayerNumbers(gameData[0].currentPlayerNumber)
+            setCurrentPlayerWordList(gameData[0].currentPlayerWordList)
+            setClicCounter(gameData[0].currentAttempt)
         }
-        verifyMaster()
-
-    }, [ getDataGame, getGameSetting, token]);
-
-// if (gamemaster === false){
-// return <div>Vous ne semblez pas etre gamemaster</div>
-// }
-
+    }, [clicCounter, currentPlayerNumber, currentPlayerWordList, gameData]);
 
     const handleValiderMot = async () => {
         const updatedGameData = [...gameData];
@@ -130,7 +265,6 @@ const GameGM = () => {
             setTeamScore((prevScore) => prevScore + 1);
             const nextWord = updatedGameData[0].players[1].wordlist[0]
             currentWord.status = 1;
-            console.log(nextWord);
             updatedGameData[0].currentWord = nextWord.word
             nextWord.status = 3
             updatedGameData[0].currentWordIndex = 0
@@ -139,10 +273,14 @@ const GameGM = () => {
             updatedGameData[0].rounds = 2
             updatedGameData[0].currentAttempt = reponseSend + 1
             updatedGameData[0].points = teamScore + 1
-            const response = await axios.post("/team/update", { gameData: updatedGameData });
-            // await axios.post("/team/update", { gameData: updatedGameData });
-            // const response = await axios.get("/team/dataGame");
-            setGameData(response.data)
+            socket.emit('getUpdate', { gameData: updatedGameData }, (res) => {
+                if (res.success) {
+                    setGameData(res.data)
+
+                }
+            })
+            // const response = await axiosBase.post("/team/update", { gameData: updatedGameData });
+            // setGameData(response.data)
             chronoRef.current.reset();
 
             // window.location.reload();
@@ -154,11 +292,14 @@ const GameGM = () => {
                 updatedGameData[0].currentAttempt = reponseSend + 1
                 updatedGameData[0].points = teamScore + 1
                 updatedGameData[0].currentWordIndex = currentWordIndex + 1
-                // Make the API call to update the backend with the updated data
-                const response = await axios.post("/team/update", { gameData: updatedGameData });
-                // await axios.post("/team/update", { gameData: updatedGameData });
-                // const response = await axios.get("/team/dataGame");
-                setGameData(response.data)
+                socket.emit('getUpdate', { gameData: updatedGameData }, (res) => {
+                    if (res.success) {
+                        setGameData(res.data)
+
+                    }
+                })
+                // const response = await axiosBase.post("/team/update", { gameData: updatedGameData });
+                // setGameData(response.data)
                 chronoRef.current.reset();
             } else {
                 setTeamScore((prevScore) => prevScore + 1);
@@ -169,19 +310,25 @@ const GameGM = () => {
                 updatedGameData[0].currentAttempt = reponseSend + 1
                 updatedGameData[0].points = teamScore + 1
                 updatedGameData[0].currentWordIndex = currentWordIndex + 1
-                // Make the API call to update the backend with the updated data
-                const response = await axios.post("/team/update", { gameData: updatedGameData });
-                // await axios.post("/team/update", { gameData: updatedGameData });
-                // const response = await axios.get("/team/dataGame");
-                setGameData(response.data)
+                socket.emit('getUpdate', { gameData: updatedGameData }, (res) => {
+                    if (res.success) {
+                        setGameData(res.data)
+
+                    }
+                })
+                // const response = await axiosBase.post("/team/update", { gameData: updatedGameData });
+                // setGameData(response.data)
                 chronoRef.current.reset();
             }
 
         }
         if (clicCounter === numWordsPerRound) {
-            await axios.post("/endgame/endGame")
-            navigate('/recap');
-        
+            socket.emit('endGame', (res) => {
+                if (res.success) {
+                    navigate('/recap');
+                }
+            })
+            // await axiosBase.post("/endgame/endGame")
         }
     };
 
@@ -208,10 +355,14 @@ const GameGM = () => {
             updatedGameData[0].currentPlayerWordList = currentPlayerWordlist + 1
             updatedGameData[0].rounds = 2
             updatedGameData[0].currentAttempt = reponseSend + 1
-            const response = await axios.post("/team/update", { gameData: updatedGameData });
-            // await axios.post("/team/update", { gameData: updatedGameData });
-            // const response = await axios.get("/team/dataGame");
-            setGameData(response.data)
+            socket.emit('getUpdate', { gameData: updatedGameData }, (res) => {
+                if (res.success) {
+                    setGameData(res.data)
+
+                }
+            })
+            // const response = await axiosBase.post("/team/update", { gameData: updatedGameData });
+            // setGameData(response.data)
             chronoRef.current.reset();
         } else {
             if (currentWordIndex === currentPlayer.wordlist.length - 1 && updatedGameData[0].currentPlayerWordList === 2) {
@@ -219,72 +370,82 @@ const GameGM = () => {
                 currentWord.status = 2;
                 updatedGameData[0].currentAttempt = reponseSend + 1
                 updatedGameData[0].currentWordIndex = currentWordIndex + 1
-                // Make the API call to update the backend with the updated data
-                const response = await axios.post("/team/update", { gameData: updatedGameData });
-                // const response = await axios.get("/team/dataGame");
-                setGameData(response.data)
+                socket.emit('getUpdate', { gameData: updatedGameData }, (res) => {
+                    if (res.success) {
+                        setGameData(res.data)
+                    }
+                })
+                // const response = await axiosBase.post("/team/update", { gameData: updatedGameData });
+                // setGameData(response.data)
                 chronoRef.current.reset();
             } else {
-                console.log(nextWord);
                 setCurrentWordIndex((prevScore) => prevScore + 1)
                 currentWord.status = 2;
                 nextWord.status = 3
                 updatedGameData[0].currentWord = nextWord
                 updatedGameData[0].currentAttempt = reponseSend + 1
                 updatedGameData[0].currentWordIndex = currentWordIndex + 1
-                // Make the API call to update the backend with the updated data
-                const response = await axios.post("/team/update", { gameData: updatedGameData });
-                // const response = await axios.get("/team/dataGame");
-                setGameData(response.data)
+                socket.emit('getUpdate', { gameData: updatedGameData }, (res) => {
+                    if (res.success) {
+                        setGameData(res.data)
+
+                    }
+                })
+                // const response = await axiosBase.post("/team/update", { gameData: updatedGameData });
+                // setGameData(response.data)
                 chronoRef.current.reset();
             }
         }
         if (clicCounter === numWordsPerRound) {
-            await axios.post("/endgame/endGame")
-            navigate('/recap');
-          
+            socket.emit('endGame', (res) => {
+                if (res.success) {
+                    navigate('/recap');
+                }
+            })
+            // await axiosBase.post("/endgame/endGame")
+            // navigate('/recap');
+
         }
     };
-    
 
-    useEffect(() => {
-        if (gameData) {
-            setCurrentWordIndex(gameData[0].currentWordIndex)
-            setTeamScore(gameData[0].points)
-            setCurrentPlayerNumbers(gameData[0].currentPlayerNumber)
-            setCurrentPlayerWordList(gameData[0].currentPlayerWordList)
-            setClicCounter(gameData[0].currentAttempt)
-        }
-    }, [clicCounter, currentPlayerNumber, currentPlayerWordList, gameData]);
+
 
     const handleTimeout = () => {
+        console.log('lala');
         // Logique à exécuter lorsque le chrono atteint 0
         // ...
     };
 
     const resetGame = async () => {
         try {
-            axios.post("/team/reset")
+            socket.emit('teamReset', (response) => {
+                if (response.success) {
+                    navigate('/waitingroom');
+                }
+            })
         } catch (error) {
             console.log(error);
         }
     }
+
     useEffect(() => {
-        socket.on('reset', () => {
-            navigate('/waitingroom');
-        });
+        // socket.on('reset', () => {
+        //     navigate('/waitingroom');
+        // });
         socket.on('endgame', () => {
             navigate('/recap');
         });
-        return () => {
-            socket.disconnect();
-        }
-    }, [socket, navigate])
+        // return () => {
+        //     socket.disconnect();
+        // }
+    }, [navigate])
+
+
 
     return (
         <div className='GM-main'>
             {gamemaster ? (
-            <><div>
+                <><div>
                     <h1>ahmed mot de passe</h1>
                 </div><div>
                         <h2 className='GM-round'>
@@ -292,7 +453,7 @@ const GameGM = () => {
                         </h2>
                         <div className='GM-button-main'>
                             <div className='GM-button-reset-wrapper'><button className='GM-button-reset' onClick={resetGame}>Reset la game</button></div>
-                            <div className='GM-button-regen-wrapper'><button className='GM-button-regen' onClick={regenWords}>Regenerer une liste de mots</button></div>
+                            <div className='GM-button-regen-wrapper'><button className='GM-button-regen' onClick={getWords_2}>Regenerer une liste de mots</button></div>
                         </div>
                         <Chrono ref={chronoRef} initialTime={countdown} onTimeout={handleTimeout} />
                         <div className='GM-TeamScore-main'>
@@ -343,7 +504,7 @@ const GameGM = () => {
                 <h2>Vous n'êtes pas GameMaster</h2>
             </div>
             )}
-        </div> 
+        </div>
     );
 };
 

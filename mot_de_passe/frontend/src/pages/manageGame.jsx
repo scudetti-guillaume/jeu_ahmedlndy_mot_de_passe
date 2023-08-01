@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from '../axiosConfig.js';
+import { socket} from '../config.js';
 import { useNavigate } from 'react-router-dom'; 
 
 const ManageGame = () => {
@@ -16,15 +16,24 @@ const ManageGame = () => {
             const getToken = localStorage.getItem('token');
 
             setToken(getToken)
-            await axios.get("/gamemaster/getGameSettings").then((doc) => {
-                if (doc) {
-                setTimePerRound(doc.data[0].chrono)
-                    setNumWordsPerRound(doc.data[0].wordsNumber)
-                    console.log(doc);
+            socket.emit('getGameSettings',(res)=>{
+            if (res.success) {
+            console.log(res);
+                    setTimePerRound(res.data[0].chrono)
+                    setNumWordsPerRound(res.data[0].wordsNumber)
                 } else {
                     return <div>tu n'est pas GameMaster</div>
                 }
             })
+            // await axiosBase.get("/gamemaster/getGameSettings").then((doc) => {
+            //     if (doc) {
+            //     setTimePerRound(doc.data[0].chrono)
+            //         setNumWordsPerRound(doc.data[0].wordsNumber)
+            //         console.log(doc);
+            //     } else {
+            //         return <div>tu n'est pas GameMaster</div>
+            //     }
+            // })
         }
         verifyMaster()
     }, [token]);
@@ -38,14 +47,18 @@ const ManageGame = () => {
         };
     
         try {
-            await axios.post("/gamemaster/manageGame", { token: token, data : data }).then((doc)=>{
-            
-            console.log(doc);
-            
+            socket.emit('getManageGame', { token: token, data: data },(res)=>{
+            if (res.success) { console.log(res);
+            } else {
+                return <div>tu n'est pas GameMaster</div>
+            }
             })
+        //     await axiosBase.post("/gamemaster/manageGame", { token: token, data : data }).then((doc)=>{
+        //     console.log(doc);
+        //     })
            
         } catch (error) {
-            // Gérer les erreurs de la requête
+        console.log(error);
         }
     };
 
