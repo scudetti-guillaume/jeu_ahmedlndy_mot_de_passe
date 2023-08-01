@@ -46,7 +46,7 @@ const ChronoGM = ({ initialTime, onTimeout }, ref) => {
         }
         socket.emit('getChrono', { chrono: countdown }, (response) => {
             if (response.success) {
-                console.log(response.data);
+                // console.log(response.data);
                 setCountdown(response.data)
             }
         })

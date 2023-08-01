@@ -74,7 +74,7 @@ io.on('connection', (socket) => {
         teamRoute.getChrono(data, (response) => {
             callback(response);
             if (response.success) {
-            console.log(data);
+            // console.log(data);
                 io.emit('chrono', response.data); 
             }
         });
@@ -102,12 +102,22 @@ io.on('connection', (socket) => {
             }
         });
     });
+    socket.on('getWord', async (data, callback) => { teamRoute.getWord(data, callback);});
     
-    socket.on('getWord', async (data,callback) => { teamRoute.getWord(data,callback)});
+    // socket.on('getWord', async (data,callback) => { teamRoute.getWord(data,(response)=>{
+    //     callback(response);
+    //     if (response.success) {
+    //         io.emit('Game', response.data);
+    //     }
+    // })});
+    
+    // socket.on('regenList', async (data, callback) => { teamRoute.regenList(data, callback); });
     socket.on('regenList', async (data,callback) => { teamRoute.regenList(data,(response)=>{
         callback(response);
         if (response.success) {
+          
             io.emit('Game', response.data);
+            console.log(response.data);
         }
     })});
     

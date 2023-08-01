@@ -47,19 +47,21 @@ const GamePlayers = () => {
         localStorage.removeItem('user');
     };
 
+    socket.on('Game', (data) => {  
+    console.log(data);
+            setGameData(data);
+            setRound(data[0].rounds)
+            setCountdown(data[0].chrono)
+            setCurrentPlayer(data.currentPlayerWordList);
+        
+    });
+
+
+
 
     useEffect(() => {
    
-        socket.on('Game', async (response) => {
-         if (response.success){
-             const data = response.data
-             setGameData(data);
-             setRound(data[0].rounds)
-             setCountdown(data[0].chrono)
-             setCurrentPlayer(data.currentPlayerWordList);
-         }
-        });
-        
+       
         socket.on('reset', () => {
             navigate('/waitingroom');
         });
@@ -86,7 +88,7 @@ const GamePlayers = () => {
     
      useEffect(()=>{
          getDataGame();
-     })
+     },[])
      
      
     useEffect(() => {

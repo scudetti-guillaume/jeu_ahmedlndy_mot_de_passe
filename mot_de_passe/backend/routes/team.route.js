@@ -105,7 +105,9 @@ exports.getWord = async (data,callback) => {
                 ]
             };
             await TeamModel.updateMany({}, updateQuery, options);
-            callback({ success: true,  list_1: player1Words, list_2: player2Words })
+            const PlayerList = await TeamModel.find({});
+            callback({ success: true, data: PlayerList });
+            // callback({ success: true,  list_1: player1Words, list_2: player2Words })
         } catch (err) {
             callback({ success: false, error : err})
         }
@@ -126,8 +128,6 @@ exports.regenList = async (data, callback) => {
             list_2.push(player.wordlist);
         });
     });
-
-
         try {
             const unsetQuery = {
                 $unset: {
@@ -156,11 +156,41 @@ exports.regenList = async (data, callback) => {
                 ],
             };
             await TeamModel.updateMany({}, pushQuery, pushoptions);
-            PlayerList = await TeamModel.find({})
+                const PlayerList = await TeamModel.find({});
+                console.log(PlayerList);
+               callback({ success: true, data: PlayerList });
 
-                callback({ success: true, data: PlayerList});
+            // callback({ success: true, list_1: player1Words, list_2: player2Words });
         } else {
-                callback({ success: true, data: PlayerList });
+                const unsetQuery = {
+                    $unset: {
+                        "players.$[elem1].wordlist": 1,
+                        "players.$[elem2].wordlist": 1,
+                    },
+                };
+                const unsetOptions = {
+                    arrayFilters: [
+                        { "elem1.playerNumber": 1 },
+                        { "elem2.playerNumber": 2 },
+                    ],
+                };
+                await TeamModel.updateMany({}, unsetQuery, unsetOptions);
+                const pushQuery = {
+                    $push: {
+                        "players.$[elem1].wordlist": { $each: player1Words },
+                        "players.$[elem2].wordlist": { $each: player2Words },
+                    },
+                };
+                const pushoptions = {
+                    arrayFilters: [
+                        { "elem1.playerNumber": 1 },
+                        { "elem2.playerNumber": 2 },
+                    ],
+                };
+                await TeamModel.updateMany({}, pushQuery, pushoptions);
+                const PlayerList = await TeamModel.find({});
+                console.log(PlayerList);
+            callback({ success: true, data: PlayerList });
         }
     
         } catch (err) {

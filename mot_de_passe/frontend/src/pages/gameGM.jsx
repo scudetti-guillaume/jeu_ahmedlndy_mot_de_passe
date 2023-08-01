@@ -46,29 +46,29 @@ const GameGM = () => {
     }, []);
 
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(() => {
-    const getGameSetting = async () => {
-        try {
-            const response = await new Promise((resolve, reject) => {
-                socket.emit('getGameSettings', (response) => {
-                    resolve(response);
-                });
-            });
-            if (response.success) {
-                setCountdown(response.data[0].chrono)
-                setNumberWord(response.data[0].wordsNumber)
-            }
-            // getDataGame(); 
 
-            // await axiosBase.get('gamemaster/getGameSettings').then((doc) => {
-            //     setCountdown(doc.data[0].chrono)
-            //     setNumberWord(doc.data[0].wordsNumber)
-            // })
-        } catch (error) {
-            console.log(error);
-        }
-    };
+    useEffect(() => {
+        const getGameSetting = async () => {
+            try {
+                const response = await new Promise((resolve, reject) => {
+                    socket.emit('getGameSettings', (response) => {
+                        resolve(response);
+                    });
+                });
+                if (response.success) {
+                    setCountdown(response.data[0].chrono)
+                    setNumberWord(response.data[0].wordsNumber)
+                }
+                // getDataGame(); 
+
+                // await axiosBase.get('gamemaster/getGameSettings').then((doc) => {
+                //     setCountdown(doc.data[0].chrono)
+                //     setNumberWord(doc.data[0].wordsNumber)
+                // })
+            } catch (error) {
+                console.log(error);
+            }
+        };
         getGameSetting()
     }, [])
 
@@ -80,6 +80,7 @@ const GameGM = () => {
     useEffect(() => {
         const getWords = async (numWords, usedWords) => {
             try {
+                // await getGameSetting()
                 const response = await fetch(`https://api.datamuse.com/words?ml=fr&max=1000`);
                 const data = await response.json();
                 const frenchWords = data
@@ -93,40 +94,36 @@ const GameGM = () => {
                 const player1Words = newWords.slice(0, numWords / 2).map(word => ({ word, status: 0 }));
                 const player2Words = newWords.slice(numWords / 2, numWords).map(word => ({ word, status: 0 }));
                 socket.emit('getWord', { player1Words, player2Words }, (res) => {
-                    if (res.success) {
-                        socket.emit('getDataGame', (res) => {
-                            if (res.success) {
-                                setGameData(res.data);
-                            }
-                        });
-                    }
+                    console.log(res);
+                    setGameData(res.data);
                 })
-                // await axiosBase.post("/team/words", { player1Words, player2Words });
+
             } catch (error) {
                 console.log(error);
-                return [];
             }
         };
-        // getGameSetting ()
-        getWords()
-    }, [])
+        getWords(numWordsPerRound, [])
+    }, [numWordsPerRound])
+
+    // useEffect(() => {
     // const getDataGame = async () => {
     //     try {
-
     //         socket.emit('getDataGame', (res) => {
     //             if (res.success) {
     //                 setGameData(res.data);
     //             }
     //         })
-    //         // const response = await axiosBase.get("/team/dataGame");
-    //         // setGameData(response.data);
     //     } catch (error) {
     //         console.log(error);
     //     }
     // };
+    //     getDataGame()
+    // }, [])
 
 
     const getWords_2 = async (numWords, usedWords) => {
+        numWords = numberWord
+        usedWords = []
         try {
             const response = await fetch(`https://api.datamuse.com/words?ml=fr&max=1000`);
             const data = await response.json();
@@ -138,11 +135,18 @@ const GameGM = () => {
                 const j = Math.floor(Math.random() * (i + 1));
                 [newWords[i], newWords[j]] = [newWords[j], newWords[i]];
             }
-            const player1Words = newWords.slice(0, numWords / 2).map(word => ({ word, status: 0 }));
-            const player2Words = newWords.slice(numWords / 2, numWords).map(word => ({ word, status: 0 }));
-            socket.emit('regenList', { player1Words, player2Words }, (res) => {
+            const player1Words = await newWords.slice(0, numWords / 2).map(word => ({ word, status: 0 }));
+            const player2Words = await newWords.slice(numWords / 2, numWords).map(word => ({ word, status: 0 }));
+   
+            socket.emit('regenList', { player1Words, player2Words }, async (res) => {
                 if (res.success) {
                     setGameData(res.data);
+                    socket.emit('getDataGame', (res) => {                   
+                        if (res.success) {
+                            console.log(res.data);
+                            setGameData(res.data);
+                        }
+                    })
                 }
             })
             // await axiosBase.post("/team/words", { player1Words, player2Words });
@@ -155,87 +159,22 @@ const GameGM = () => {
     // const getDataGame_2 = async () => {
     //     try {
     //         // await getGameSetting() 
-    //         await getWords_2(numberWord, []).then(()=>{
-    //         console.log('jerequete');
-    //             socket.emit('getDataGame', (res) => {
+    //         await getWords_2(numberWord, [])
+    //             console.log('jerequete');
+    //             socket.emit('getDataGame', async (res) => {
     //                 if (res.success) {
-    //                 console.log(res);
+    //                  window.location.reload()
+    //                     console.log(res);
     //                     setGameData(res.data);
     //                 }
     //             })
-    //         })
+            
     //         // const response = await axiosBase.get("/team/dataGame");
     //         // setGameData(response.data);
     //     } catch (error) {
     //         console.log(error);
     //     }
     // };
-
-    // const getDataGame_2 = async () => {
-    //     try {
-    //         socket.emit('regenList',(res)=>{
-    //             if (res.success) {
-    //                 socket.emit('getDataGame', (res) => {
-    //                     if (res.success) {
-    //                         setGameData(res.data);
-    //                     }
-    //                 })            
-    //             }   
-    //         })
-    //         // await axiosBase.patch("/team/regenwords")
-    //         // await getDataGame_2()
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // }
-
-    // const verifyMaster = async () => {
-    //     const getToken = localStorage.getItem('token');
-    //     setToken(getToken)
-
-    //     const res = await new Promise((resolve, reject) => {
-    //         socket.emit('getGameMaster', { token: token }, (response) => {
-    //             resolve(response);
-    //         });
-    //     });
-
-    //     // socket.emit('getGameMaster', { token: token }, (res) => {
-    //         if (res.success) {
-    //             if (res.data === 'not gamemaster') {
-    //                 setGameMaster(true)
-    //                 // return <div>Vous ne semblez pas etre gamemaster</div>
-    //             } else {
-    //                 setGameMaster(true);
-    //                 await getGameSetting();
-    //                 await getWords(numWordsPerRound, []);
-    //             }
-    //         }
-    //     // })
-
-    //     // await axiosBase.post("/gamemaster/gamemaster", { token: token })
-    //     //     .then((doc) => {
-    //     //         if (doc.data === 'not gamemaster') {      
-    //     //             setGameMaster(false)
-    //     //             return <div>Vous ne semblez pas etre gamemaster</div>
-    //     //         } else {
-    //     //             setGameMaster(true)
-    //     //             getGameSetting()
-    //     //             getDataGame();
-    //     //         }
-    //     //     })
-    // }
-
-
-
-    // useEffect(() => {
-    //     if (gamemaster) {
-    //         socket.emit('getDataGame', (res) => {
-    //             if (res.success) {
-    //                 setGameData(res.data);
-    //             }
-    //         });
-    //     }
-    // }, [gamemaster]);
 
 
 
