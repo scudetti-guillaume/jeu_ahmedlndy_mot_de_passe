@@ -3,6 +3,7 @@ import { socket } from '../config.js';
 import { useNavigate } from 'react-router-dom';
 
 
+
 const SummaryGame = () => {
     const navigate = useNavigate();
     const [userRole, setUserRole] = useState(null);
@@ -16,10 +17,12 @@ const SummaryGame = () => {
     const getDataGame = async () => {
         try {
         
-            const response = socket.emit('getEndGameData')
-            // const response = await axiosBase.get("/endgame/getData");
-            console.log(response.data);
-            setGameData(response.data);
+            socket.emit('getEndGameData',(response)=>{
+            if (response.success) {
+                console.log(response.data);
+                setGameData(response.data);
+            }
+            })          
         } catch (error) {
             console.log(error);
         }
@@ -66,6 +69,7 @@ const SummaryGame = () => {
         return <div>ça charge ...</div>
 
     }
+
 
 
     return (

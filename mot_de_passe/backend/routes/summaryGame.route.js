@@ -7,9 +7,10 @@ exports.endGame = async (callback) => {
     try {
         const dataEndGame = await TeamModel.find({});
         await EndGame.insertMany(dataEndGame)
-        await PlayerModel.updateMany({ selected: true }, { selected: false, Number: 0 });
-        await TeamModel.updateOne({ finish: true });
-        callback({ success: true, data : dataEndGame, message: "Mise à jour effectuée avec succès." })
+        await PlayerModel.deleteMany({})
+        // await PlayerModel.updateMany({ selected: true }, { selected: false, Number: 0 });
+        const dataToEmit = await TeamModel.updateOne({ finish: true });
+        callback({ success: true, data: dataToEmit, message: "Mise à jour effectuée avec succès." })
 
     } catch (error) {
         callback({ success: false, message: error })
@@ -19,6 +20,7 @@ exports.endGame = async (callback) => {
 
 exports.getEndGameData = async (callback) => {
     try {
+        TeamModel.deleteMany({});
         const data = await EndGame.find({}).sort({ createdAt: -1 }).limit(1);
         callback({success:true, data : data})
     } catch (err) {
@@ -28,9 +30,9 @@ exports.getEndGameData = async (callback) => {
 
 
 
-const express = require("express");
-const router = express.Router();
-const endGame = require("../controllers/summaryGame.controller");
+// const express = require("express");
+// const router = express.Router();
+// const endGame = require("../controllers/summaryGame.controller");
 
 // router.post("/endGame", (req, res) => {
 //     endGame.endgame(req, res);

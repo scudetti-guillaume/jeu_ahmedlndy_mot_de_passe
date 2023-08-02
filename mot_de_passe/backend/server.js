@@ -74,7 +74,7 @@ io.on('connection', (socket) => {
         teamRoute.getChrono(data, (response) => {
             callback(response);
             if (response.success) {
-            // console.log(data);
+            console.log(data);
                 io.emit('chrono', response.data); 
             }
         });
@@ -102,20 +102,19 @@ io.on('connection', (socket) => {
             }
         });
     });
-    socket.on('getWord', async (data, callback) => { teamRoute.getWord(data, callback);});
+    // socket.on('getWord', async (data, callback) => { teamRoute.getWord(data, callback);});
     
-    // socket.on('getWord', async (data,callback) => { teamRoute.getWord(data,(response)=>{
-    //     callback(response);
-    //     if (response.success) {
-    //         io.emit('Game', response.data);
-    //     }
-    // })});
+    socket.on('getWord', async (data,callback) => { teamRoute.getWord(data,(response)=>{
+        callback(response);
+        if (response.success) {
+            io.emit('Game', response.data);
+        }
+    })});
     
     // socket.on('regenList', async (data, callback) => { teamRoute.regenList(data, callback); });
     socket.on('regenList', async (data,callback) => { teamRoute.regenList(data,(response)=>{
         callback(response);
-        if (response.success) {
-          
+        if (response.success) {       
             io.emit('Game', response.data);
             console.log(response.data);
         }
@@ -124,18 +123,20 @@ io.on('connection', (socket) => {
     socket.on('getUpdate', async (data , callback) => { teamRoute.getUpdate(data ,(response)=>{
         callback(response);
         if (response.success) {
-            io.emit('update'); 
+          console.log('emitupdate');
+            io.emit('Game', response.data); 
         }
     })});
     
-    socket.on('getDataGame', async(callback) => {
-        teamRoute.getDataGame((response) => {
-            callback(response);
-            if (response.success) {
-                io.emit('Game', response.data);
-            }
-        });
-    });
+    socket.on('getDataGame', async (data, callback) => {teamRoute.getDataGame(data, callback); });
+    // socket.on('getDataGame', async(callback) => {
+    //     teamRoute.getDataGame((response) => {
+    //         callback(response);
+    //         if (response.success) {
+    //             io.emit('Game', response.data);
+    //         }
+    //     });
+    // });
 
     socket.on('teamReset', async(callback)=> {
         teamRoute.teamReset((response) => {
@@ -156,7 +157,9 @@ io.on('connection', (socket) => {
     socket.on('endGame', async (callback) => { gameRoute.endGame((response)=>{
         callback(response);
         if (response.success) {
-            io.emit("endgame", dataEndGame)
+        console.log('endgame');
+            // io.emit("Game", dataToEmit)
+            io.emit("endGamePlayer")
         }
     }); });
     

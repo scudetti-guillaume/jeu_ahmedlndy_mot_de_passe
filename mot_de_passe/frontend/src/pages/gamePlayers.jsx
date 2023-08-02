@@ -25,13 +25,12 @@ const GamePlayers = () => {
                 if (gameDataProps.includes(undefined)) {
                     window.location.reload()
                     return <div>ça charge ...</div>
-                }
-
-            // const response = await axiosBase.get("/team/dataGame")
-            setRound(response.data[0].rounds)
+                }else{
             setGameData(response.data);
+            setRound(response.data[0].rounds)
             setCountdown(response.data[0].chrono)
             setCurrentPlayer(response.data[0].currentPlayerWordList)
+                }
                 }
             }
             })
@@ -40,6 +39,12 @@ const GamePlayers = () => {
         }
     };
     
+    
+    useEffect(() => {
+        getDataGame();
+    }, [])
+
+    
     const removePlayer = () => {
         localStorage.removeItem('role');
         localStorage.removeItem('pseudo');
@@ -47,49 +52,61 @@ const GamePlayers = () => {
         localStorage.removeItem('user');
     };
 
-    socket.on('Game', (data) => {  
-    console.log(data);
-            setGameData(data);
-            setRound(data[0].rounds)
-            setCountdown(data[0].chrono)
-            setCurrentPlayer(data.currentPlayerWordList);
-        
-    });
-
 
 
 
     useEffect(() => {
-   
+        socket.on('Game', async (data) => {
+        console.log('dataGame');
+            if (data !== undefined ) {
+                const gameDataProps = Object.values(data[0]);
+                if (gameDataProps.includes(undefined)) {
+                    window.location.reload()
+                    return <div>ça charge ...</div>
+                } else {
+                console.log(data);
+            setGameData(data);
+                }
+                } else {
+                socket.emit('getDataGame', (response) => {
+                    console.log('updateviaData');
+                    if (response.success) {
+                        if (response.data && response.data.length > 0) {
+                            const gameDataProps = Object.values(response.data[0]);
+                            if (gameDataProps.includes(undefined)) {
+                                window.location.reload()
+                                return <div>ça charge ...</div>
+                            } else {
+                                setGameData(response.data[0]);
+                                setRound(response.data[0].rounds)
+                                setCountdown(response.data[0].chrono)
+                                setCurrentPlayer(response.data[0].currentPlayerWordList)
+                            }
+                        }
+                    }
+                })           
+                }
+        });
+        
+        socket.on('chrono', async (response) => {
+        console.log(response);
+            setCountdown(response)
+        });
+
        
         socket.on('reset', () => {
             navigate('/waitingroom');
         });
 
-        socket.on('update', async (response) => {
-            if (response.success) {
-                const data = await response.data
-            // window.location.reload()
-                setGameData(data);   
-                setRound(data.rounds)
-                setCurrentPlayer(data.currentPlayerWordList)
-                setCountdown(data.chrono);
-                setClicCounter(data.currentAttempt)
-            }
+        socket.on('endGamePlayer', () => {
+            removePlayer()
+            navigate('/recap');
         });
-        
 
-     
-        // return () => {
-        //     socket.disconnect();
-        // };
         
     }, [navigate]);
     
-     useEffect(()=>{
-         getDataGame();
-     },[])
-     
+  
      
     useEffect(() => {
         if (gameData) {
@@ -120,7 +137,7 @@ const GamePlayers = () => {
             }
         }
     }
-    }, [gameData, navigate]);
+    }, [gameData, navigate, points, round]);
 
     if (!gameData) {
         return <div>ça charge ...</div>
@@ -144,7 +161,7 @@ const GamePlayers = () => {
                     </div>
                     <div className="GP-chrono">
                         <p>Chrono : </p>
-                        <span className="GP-chrono-coutndown">{gameData[0].chrono} secondes</span>
+                        <span className="GP-chrono-coutndown">{countdown} secondes</span>
                     </div>
                     <div className="GP-player-main">
                         {gameData &&

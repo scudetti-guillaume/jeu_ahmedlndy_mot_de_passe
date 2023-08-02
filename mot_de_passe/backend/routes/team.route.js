@@ -112,7 +112,8 @@ exports.getWord = async (data,callback) => {
             callback({ success: false, error : err})
         }
     } else {
-        callback({ success: true, list_1 , list_2 })
+        const PlayerList = await TeamModel.find({});
+        callback({ success: true, data: PlayerList });
     }
 }
 
@@ -209,22 +210,17 @@ exports.getDataGame = async (callback) => {
 
 
 
-exports.getUpdate = async (data , callback) => {
+exports.getUpdate = async (data, callback) => {
     try {
-        const newGameData = data;
-        await TeamModel.deleteMany();
-        await TeamModel.insertMany(newGameData).then((doc) => {
-          callback({success : true , data : doc})
-            // req.app.get("io").emit("update", doc);
-            // res.status(200).json(doc);
-        })
-
-
+        await TeamModel.deleteMany({});
+        const newData = await TeamModel.insertMany(data.updatedGameData);
+        // console.log(newData);
+        callback({ success: true, data: newData });
     } catch (error) {
-        res.status(400).json({ message: "Une erreur s'est produite lors de la mise à jour des données.", error });
+        console.error(error);
+        callback({ success: false, data: 'erreur lors de la mise à jour des données' });
     }
-
-}
+};
 
 
 exports.teamReset = async (callback) => {

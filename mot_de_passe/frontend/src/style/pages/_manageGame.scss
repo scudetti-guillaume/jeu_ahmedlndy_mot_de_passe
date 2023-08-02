@@ -1,1 +1,48 @@
 @import "../_settings.scss";
+
+.Main-mg {
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+margin-top: 2%;
+}
+
+.h2-mg{
+margin-bottom: 1%;
+}
+
+
+.Form-mg {
+display: flex;
+align-items: center;
+justify-content: center;
+flex-direction: column;
+}
+
+#timePerRound{
+width: 50px;
+align-items: center;
+}
+#numWordsPerRound{
+    width: 50px;
+    align-items: center;
+}
+
+.RoundTime-mg {
+padding-bottom: 2%;
+}
+
+.RoundWord-mg {
+padding-bottom: 2%;
+}
+
+.btn-register-mg {
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 10px;
+padding: 1%;
+margin-bottom: 2%;
+color: rgb(106, 68, 19);
+}

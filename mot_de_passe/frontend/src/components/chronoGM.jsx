@@ -2,6 +2,7 @@ import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'rea
 import { socket} from '../config.js';
 
 const ChronoGM = ({ initialTime, onTimeout }, ref) => {
+   const [resetChrono, setResetChrono] = useState('')
     const [countdown, setCountdown] = useState(initialTime);
     // const [countdownProgress, setCountdownProgress] = useState(countdown);
     const [isRunning, setIsRunning] = useState(false);
@@ -10,24 +11,19 @@ const ChronoGM = ({ initialTime, onTimeout }, ref) => {
     useEffect(() => {
     const getGameSetting = async () => {
         try {
-            socket.emit('getGameSettings', (response) => {
+            socket.emit('getDataGame', async (response) => {
                 if (response.success) {
+                    setResetChrono(response.data[0].chrono)
                     setCountdown(response.data[0].chrono)
                 }
             })
-
-            // await axiosBase.get('gamemaster/getGameSettings').then((doc) => {
-            // console.log(doc.data[0].chrono);
-            // setCountdown(doc.data[0].chrono)            
-            // })
+            
         } catch (error) {
             console.log(error);
         }
     };
-    
-   
         getGameSetting()
-    },);
+    },[]);
 
     useEffect(()  => {
         let timer;
@@ -45,10 +41,7 @@ const ChronoGM = ({ initialTime, onTimeout }, ref) => {
             
         }
         socket.emit('getChrono', { chrono: countdown }, (response) => {
-            if (response.success) {
-                // console.log(response.data);
-                setCountdown(response.data)
-            }
+
         })
     
         // axiosBase.post("/team/chrono", { chrono: countdown });    
@@ -59,7 +52,7 @@ const ChronoGM = ({ initialTime, onTimeout }, ref) => {
 
     useImperativeHandle(ref, () => ({
         reset() {     
-            setCountdown(initialTime);
+            setCountdown(resetChrono);
             setIsRunning(false);
         },
     }));
@@ -79,7 +72,7 @@ const ChronoGM = ({ initialTime, onTimeout }, ref) => {
         <div className='GM-Chrono'>
             <div className='GM-Chrono-countdown'>
                 <p>Chrono: </p>
-                <p className='GM-Chrono-countdown-seconde'>{countdown} secondes</p>
+                <p className='GM-Chrono-countdown-seconde' initialTime={resetChrono} >{countdown} secondes</p>
             </div>
             <div className='GM-btn-Chrono-wrapper'>
                 <button className='GM-btn-chrono-start' onClick={handleStart} disabled={isRunning || countdown === 0}>

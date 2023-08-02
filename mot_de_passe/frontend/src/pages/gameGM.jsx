@@ -19,7 +19,6 @@ const GameGM = () => {
     const [gamemaster, setGameMaster] = useState(false)
     const [token, setToken] = useState('');
     const numWordsPerRound = numberWord;
-    // const numWordsPerRound_2 = numberWord;
 
     useEffect(() => {
         const verifyMaster = async () => {
@@ -27,7 +26,7 @@ const GameGM = () => {
             setToken(getToken);
 
             const res = await new Promise((resolve, reject) => {
-                socket.emit('getGameMaster', { token: getToken }, (response) => {
+                socket.emit('getGameMaster', { token: token }, (response) => {
                     resolve(response);
                 });
             });
@@ -37,8 +36,6 @@ const GameGM = () => {
                     setGameMaster(false);
                 } else {
                     setGameMaster(true);
-                    // await getWords(numWordsPerRound, []);
-                    // await getDataGame()
                 }
             }
         };
@@ -46,41 +43,9 @@ const GameGM = () => {
     }, []);
 
 
-
-    useEffect(() => {
-        const getGameSetting = async () => {
-            try {
-                const response = await new Promise((resolve, reject) => {
-                    socket.emit('getGameSettings', (response) => {
-                        resolve(response);
-                    });
-                });
-                if (response.success) {
-                    setCountdown(response.data[0].chrono)
-                    setNumberWord(response.data[0].wordsNumber)
-                }
-                // getDataGame(); 
-
-                // await axiosBase.get('gamemaster/getGameSettings').then((doc) => {
-                //     setCountdown(doc.data[0].chrono)
-                //     setNumberWord(doc.data[0].wordsNumber)
-                // })
-            } catch (error) {
-                console.log(error);
-            }
-        };
-        getGameSetting()
-    }, [])
-
-    // socket.on('chrono',(response) => {
-    // console.log(response.data);
-    //     setCountdown(response.data)
-    // })
-
     useEffect(() => {
         const getWords = async (numWords, usedWords) => {
             try {
-                // await getGameSetting()
                 const response = await fetch(`https://api.datamuse.com/words?ml=fr&max=1000`);
                 const data = await response.json();
                 const frenchWords = data
@@ -96,29 +61,21 @@ const GameGM = () => {
                 socket.emit('getWord', { player1Words, player2Words }, (res) => {
                     console.log(res);
                     setGameData(res.data);
+                    setNumberWord(res.data[0].wordsNumber)
+                    setCountdown(res.data[0].chrono)
+
                 })
+                return socket.off('getWord');
 
             } catch (error) {
                 console.log(error);
             }
         };
         getWords(numWordsPerRound, [])
+        
+        
     }, [numWordsPerRound])
 
-    // useEffect(() => {
-    // const getDataGame = async () => {
-    //     try {
-    //         socket.emit('getDataGame', (res) => {
-    //             if (res.success) {
-    //                 setGameData(res.data);
-    //             }
-    //         })
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // };
-    //     getDataGame()
-    // }, [])
 
 
     const getWords_2 = async (numWords, usedWords) => {
@@ -156,30 +113,10 @@ const GameGM = () => {
         }
     };
 
-    // const getDataGame_2 = async () => {
-    //     try {
-    //         // await getGameSetting() 
-    //         await getWords_2(numberWord, [])
-    //             console.log('jerequete');
-    //             socket.emit('getDataGame', async (res) => {
-    //                 if (res.success) {
-    //                  window.location.reload()
-    //                     console.log(res);
-    //                     setGameData(res.data);
-    //                 }
-    //             })
-            
-    //         // const response = await axiosBase.get("/team/dataGame");
-    //         // setGameData(response.data);
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // };
-
-
-
     useEffect(() => {
+    
         if (gameData) {
+            setCountdown(gameData[0].chrono)
             setCurrentWordIndex(gameData[0].currentWordIndex)
             setTeamScore(gameData[0].points)
             setCurrentPlayerNumbers(gameData[0].currentPlayerNumber)
@@ -212,17 +149,18 @@ const GameGM = () => {
             updatedGameData[0].rounds = 2
             updatedGameData[0].currentAttempt = reponseSend + 1
             updatedGameData[0].points = teamScore + 1
-            socket.emit('getUpdate', { gameData: updatedGameData }, (res) => {
+            if (chronoRef.current) {
+                chronoRef.current.reset();
+            }
+            socket.emit('getUpdate', { updatedGameData }, async (res) => {
                 if (res.success) {
+                console.log('updaterecu');
+                    console.log(res.data);
                     setGameData(res.data)
-
+                    setCountdown(res.data[0].chrono)               
                 }
             })
-            // const response = await axiosBase.post("/team/update", { gameData: updatedGameData });
-            // setGameData(response.data)
-            chronoRef.current.reset();
-
-            // window.location.reload();
+         
         } else {
             if (currentWordIndex === currentPlayer.wordlist.length - 1 && updatedGameData[0].currentPlayerWordList === 2) {
                 setTeamScore((prevScore) => prevScore + 1);
@@ -231,15 +169,21 @@ const GameGM = () => {
                 updatedGameData[0].currentAttempt = reponseSend + 1
                 updatedGameData[0].points = teamScore + 1
                 updatedGameData[0].currentWordIndex = currentWordIndex + 1
-                socket.emit('getUpdate', { gameData: updatedGameData }, (res) => {
+                if (chronoRef.current) {
+                    chronoRef.current.reset();
+                }
+                socket.emit('getUpdate', {updatedGameData }, (res) => {
+                   
                     if (res.success) {
+                        console.log('updaterecu');
+                        console.log(res.data);
                         setGameData(res.data)
-
+                        setCountdown(res.data[0].chrono)
+                       
                     }
                 })
-                // const response = await axiosBase.post("/team/update", { gameData: updatedGameData });
-                // setGameData(response.data)
-                chronoRef.current.reset();
+              
+               
             } else {
                 setTeamScore((prevScore) => prevScore + 1);
                 setCurrentWordIndex((prevScore) => prevScore + 1)
@@ -249,25 +193,30 @@ const GameGM = () => {
                 updatedGameData[0].currentAttempt = reponseSend + 1
                 updatedGameData[0].points = teamScore + 1
                 updatedGameData[0].currentWordIndex = currentWordIndex + 1
-                socket.emit('getUpdate', { gameData: updatedGameData }, (res) => {
+                if (chronoRef.current) {
+                    chronoRef.current.reset();
+                }
+                socket.emit('getUpdate', {updatedGameData }, (res) => {
                     if (res.success) {
+                        console.log('updaterecu');
+                        console.log(res.data);
                         setGameData(res.data)
-
+                        setCountdown(res.data[0].chrono)                       
                     }
-                })
-                // const response = await axiosBase.post("/team/update", { gameData: updatedGameData });
-                // setGameData(response.data)
-                chronoRef.current.reset();
+                })        
             }
-
+          
         }
         if (clicCounter === numWordsPerRound) {
-            socket.emit('endGame', (res) => {
+            socket.emit('getUpdate', { updatedGameData }, (res) => {
                 if (res.success) {
-                    navigate('/recap');
+                    socket.emit('endGame', (res) => {
+                        if (res.success) {
+                            navigate('/recap');
+                        }
+                    })
                 }
             })
-            // await axiosBase.post("/endgame/endGame")
         }
     };
 
@@ -286,7 +235,6 @@ const GameGM = () => {
             setCurrentWordIndex(0);
             const nextWord = updatedGameData[0].players[1].wordlist[0]
             currentWord.status = 2;
-            console.log(nextWord);
             updatedGameData[0].currentWord = nextWord.word
             nextWord.status = 3
             updatedGameData[0].currentWordIndex = 0
@@ -294,29 +242,39 @@ const GameGM = () => {
             updatedGameData[0].currentPlayerWordList = currentPlayerWordlist + 1
             updatedGameData[0].rounds = 2
             updatedGameData[0].currentAttempt = reponseSend + 1
-            socket.emit('getUpdate', { gameData: updatedGameData }, (res) => {
-                if (res.success) {
-                    setGameData(res.data)
+            if (chronoRef.current) {
+                chronoRef.current.reset();
+            }
 
+            socket.emit('getUpdate', { updatedGameData }, (res) => {
+                if (res.success) {
+                    console.log('updaterecu');
+                console.log(res.data);
+                    setGameData(res.data)
+                    setCountdown(res.data[0].chrono)             
                 }
             })
-            // const response = await axiosBase.post("/team/update", { gameData: updatedGameData });
-            // setGameData(response.data)
-            chronoRef.current.reset();
+         
         } else {
             if (currentWordIndex === currentPlayer.wordlist.length - 1 && updatedGameData[0].currentPlayerWordList === 2) {
                 setCurrentWordIndex((prevScore) => prevScore + 1)
                 currentWord.status = 2;
                 updatedGameData[0].currentAttempt = reponseSend + 1
                 updatedGameData[0].currentWordIndex = currentWordIndex + 1
-                socket.emit('getUpdate', { gameData: updatedGameData }, (res) => {
+                if (chronoRef.current) {
+                    chronoRef.current.reset();
+                }
+
+                socket.emit('getUpdate', {updatedGameData }, (res) => {
                     if (res.success) {
+                        console.log('updaterecu');
+                        console.log(res.data);
                         setGameData(res.data)
+                        setCountdown(res.data[0].chrono)
+                       
                     }
                 })
-                // const response = await axiosBase.post("/team/update", { gameData: updatedGameData });
-                // setGameData(response.data)
-                chronoRef.current.reset();
+               
             } else {
                 setCurrentWordIndex((prevScore) => prevScore + 1)
                 currentWord.status = 2;
@@ -324,26 +282,31 @@ const GameGM = () => {
                 updatedGameData[0].currentWord = nextWord
                 updatedGameData[0].currentAttempt = reponseSend + 1
                 updatedGameData[0].currentWordIndex = currentWordIndex + 1
-                socket.emit('getUpdate', { gameData: updatedGameData }, (res) => {
+                if (chronoRef.current) {
+                    chronoRef.current.reset();
+                }
+                socket.emit('getUpdate', { updatedGameData }, (res) => {
                     if (res.success) {
+                        console.log('updaterecu');
+                        console.log(res.data);
                         setGameData(res.data)
-
+                        setCountdown(res.data[0].chrono)
+                        
                     }
                 })
-                // const response = await axiosBase.post("/team/update", { gameData: updatedGameData });
-                // setGameData(response.data)
-                chronoRef.current.reset();
+              
             }
         }
         if (clicCounter === numWordsPerRound) {
-            socket.emit('endGame', (res) => {
+            socket.emit('getUpdate', { updatedGameData }, (res) => {
                 if (res.success) {
-                    navigate('/recap');
+                    socket.emit('endGame', (res) => {
+                        if (res.success) {
+                            navigate('/recap');
+                        }
+                    })
                 }
             })
-            // await axiosBase.post("/endgame/endGame")
-            // navigate('/recap');
-
         }
     };
 
@@ -368,15 +331,9 @@ const GameGM = () => {
     }
 
     useEffect(() => {
-        // socket.on('reset', () => {
-        //     navigate('/waitingroom');
-        // });
         socket.on('endgame', () => {
             navigate('/recap');
         });
-        // return () => {
-        //     socket.disconnect();
-        // }
     }, [navigate])
 
 
@@ -394,7 +351,7 @@ const GameGM = () => {
                             <div className='GM-button-reset-wrapper'><button className='GM-button-reset' onClick={resetGame}>Reset la game</button></div>
                             <div className='GM-button-regen-wrapper'><button className='GM-button-regen' onClick={getWords_2}>Regenerer une liste de mots</button></div>
                         </div>
-                        <Chrono ref={chronoRef} initialTime={countdown} onTimeout={handleTimeout} />
+                        <Chrono ref={chronoRef} onTimeout={handleTimeout} />
                         <div className='GM-TeamScore-main'>
                             <div className='GM-TeamScore'>
                                 <p className='GM-TeamScore-point'>L'équipe a marqué : <span className='GM-TeamScore-point-span'>{teamScore}</span></p>

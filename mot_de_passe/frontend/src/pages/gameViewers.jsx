@@ -3,6 +3,7 @@ import { socket } from '../config.js';
 import { useNavigate } from 'react-router-dom';
 
 
+
 const GameViewers = () => {
     const navigate = useNavigate();
     const [gameData, setGameData] = useState(null);
@@ -11,10 +12,12 @@ const GameViewers = () => {
     const getDataGame = async () => {
         try {
             // const response = await axiosBase.get("/team/dataGame")
-            const response = socket.emit('getDataGame')
+            socket.emit('getDataGame',(response)=>{
+            console.log(response);
             setGameData(response.data);
             const first = response.data[0].players[0].wordlist[0].status
             console.log(first);
+            })
         } catch (error) {
             console.log(error);
         }
@@ -58,6 +61,7 @@ useEffect(()=>{
     }, [gameData, navigate],);
     
     if (!gameData) {
+        getDataGame();
        return <div>ça charge ...</div>
     }
     

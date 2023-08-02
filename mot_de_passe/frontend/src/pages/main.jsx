@@ -19,6 +19,11 @@ const Main = () => {
                         S'enregistrer en tant que GameMaster
                     </span>
                 </Link>
+                <Link to="/manageGame" className="redirectMDP">
+                    <span>
+                        Modifier les paramètres du jeu 
+                    </span>
+                </Link>
             </div>
         </div>
     );

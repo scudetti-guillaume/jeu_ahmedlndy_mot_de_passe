@@ -1,3 +1,3 @@
-export const numWordsPerRound = 6;
-export const numWordsPerRound_2 = 12;
-export const durationGame = 30;
+export const numWordsPerRound = 4;
+export const numWordsPerRound_2 = 8;
+export const durationGame = 25;

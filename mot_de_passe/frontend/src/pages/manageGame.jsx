@@ -82,10 +82,10 @@ const ManageGame = () => {
     
 
     return (
-        <div>
-            <h2>Paramètres</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
+        <div className='Main-mg'>
+            <h2 className='h2-mg'>Paramètres</h2>
+            <form className='Form-mg' onSubmit={handleSubmit}>
+                <div className='RoundTime-mg'>
                     <label htmlFor="timePerRound">Temps par manche (en minutes) :</label>
                     <input
                         type="number"
@@ -94,7 +94,7 @@ const ManageGame = () => {
                         onChange={handleTimeChange}
                     />
                 </div>
-                <div>
+                <div className='RoundWord-mg'>
                     <label htmlFor="numWordsPerRound">Nombre de mots par manche :</label>
                     <input
                         type="number"
@@ -103,7 +103,7 @@ const ManageGame = () => {
                         onChange={handleNumWordsChange}
                     />
                 </div>
-                <button type="submit">Enregistrer</button>
+                <button className='btn-register-mg' type="submit">Enregistrer</button>
             </form>
             <div className='GM-btn-valide'><button className='GM-btn-word-btn-valide' onClick={handleBackToWaitingRoom}>Retour </button></div>
         </div>
